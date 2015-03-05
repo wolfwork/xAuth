@@ -505,7 +505,6 @@ public class Updater {
                 if (this.hasTag(version) || version.equalsIgnoreCase(this.remoteVersion)) {
                     // We already have the latest version, or this build is tagged for no-update
                     this.result = Updater.UpdateResult.NO_UPDATE;
-                    return false;
                 }
             } else {
                 // The file's name did not contain the string 'vVersion'
@@ -625,7 +624,7 @@ public class Updater {
 
                 // Obtain the results of the project's file feed
                 if (!Updater.this.versionCheck(Updater.this.versionName))
-                    throw new UpdaterInvalidVersionException("An error occured during the version check process. Please check version format");
+                    throw new UpdaterInvalidVersionException("An error occured during the version check process. Please check version format. Result was: '" + Updater.this.versionName + "'");
 
                 if (Updater.this.type.equals(UpdateType.NO_DOWNLOAD)) {
                     Updater.this.result = UpdateResult.UPDATE_AVAILABLE;
