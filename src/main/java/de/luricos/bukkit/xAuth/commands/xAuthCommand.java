@@ -32,9 +32,10 @@ import org.bukkit.entity.Player;
 /**
  * @author lycano
  */
-public class xAuthCommand {
+public abstract class xAuthCommand {
 
     private MessageHandler messageHandler = xAuth.getPlugin().getMessageHandler();
+    private boolean result = false;
 
     protected void callEvent(final xAuthChangePasswordEvent event) {
         Bukkit.getPluginManager().callEvent(event);
@@ -99,4 +100,5 @@ public class xAuthCommand {
     protected MessageHandler getMessageHandler() {
         return this.messageHandler;
     }
+
 }

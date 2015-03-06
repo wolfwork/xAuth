@@ -23,6 +23,7 @@ import de.luricos.bukkit.xAuth.auth.AuthMethod;
 import de.luricos.bukkit.xAuth.auth.AuthMethodSQL;
 import de.luricos.bukkit.xAuth.auth.AuthMethodURL;
 import de.luricos.bukkit.xAuth.commands.*;
+import de.luricos.bukkit.xAuth.commands.player.*;
 import de.luricos.bukkit.xAuth.database.DatabaseController;
 import de.luricos.bukkit.xAuth.exceptions.xAuthNotAvailable;
 import de.luricos.bukkit.xAuth.listeners.*;
@@ -182,7 +183,25 @@ public class xAuth extends JavaPlugin {
         getCommand("logout").setExecutor(new LogoutCommand());
         getCommand("quit").setExecutor(new QuitCommand());
         getCommand("changepw").setExecutor(new ChangePwdCommand());
-        getCommand("xauth").setExecutor(new xAuthAdminCommands());
+
+        // register xauth admin commands
+        xAuthAdminCommands adminCommands = new xAuthAdminCommands();
+        adminCommands.setAliasCommand("changepw", "cpw");
+        adminCommands.setAliasCommand("changepw", "changepassword");
+        adminCommands.setAliasCommand("changepw", "changepass");
+
+        adminCommands.setAliasCommand("unregister", "unreg");
+
+        adminCommands.setAliasCommand("location", "loc");
+
+        adminCommands.setAliasCommand("activate", "unlock");
+
+        adminCommands.setAliasCommand("config", "conf");
+        adminCommands.setAliasCommand("config", "cfg");
+
+        adminCommands.setAliasCommand("profile", "info");
+
+        getCommand("xauth").setExecutor(adminCommands);
 
         // add commands to keyring
         for (String command : this.getDescription().getCommands().keySet()) {

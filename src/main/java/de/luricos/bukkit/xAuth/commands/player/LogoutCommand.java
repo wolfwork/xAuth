@@ -17,8 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package de.luricos.bukkit.xAuth.commands;
+package de.luricos.bukkit.xAuth.commands.player;
 
+import de.luricos.bukkit.xAuth.commands.xAuthCommand;
 import de.luricos.bukkit.xAuth.events.xAuthLogoutEvent;
 import de.luricos.bukkit.xAuth.utils.CommandLineTokenizer;
 import de.luricos.bukkit.xAuth.xAuth;

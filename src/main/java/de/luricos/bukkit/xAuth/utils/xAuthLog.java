@@ -188,16 +188,20 @@ public class xAuthLog {
         logger.log(Level.WARNING, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg));
     }
 
-    public static void severe(final String msg) {
-        logger.log(Level.SEVERE, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg));
-    }
-
     public static void info(final String msg, final Throwable e) {
         logger.log(Level.INFO, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg), e);
     }
 
     public static void warning(final String msg, final Throwable e) {
         logger.log(Level.WARNING, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg), e);
+    }
+
+    public static void debug(final String msg) {
+        finest(msg);
+    }
+
+    public static void severe(final String msg) {
+        logger.log(Level.SEVERE, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg));
     }
 
     public static void severe(final String msg, final Throwable e) {
