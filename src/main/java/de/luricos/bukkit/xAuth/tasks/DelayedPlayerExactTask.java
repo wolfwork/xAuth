@@ -19,47 +19,30 @@
  */
 package de.luricos.bukkit.xAuth.tasks;
 
+import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
+
 /**
  * @author lycano
  */
-public class xAuthTask {
+public class DelayedPlayerExactTask extends BukkitRunnable {
 
-    private int taskId = -1;
-    private xAuthTaskType taskType = xAuthTaskType.UNDEFINED;
-    private String playerName = null;
-    private boolean result = true;
+    private String playerName = "";
+    private xAuthTasks xauthTasks;
 
-    public enum xAuthTaskType {
-        UNDEFINED, DELAYED_PROTECT, DELAYED_MESSAGE, DELAYED_PREMIUM_CHECK, DELAYED_PLAYER_EXACT, KICK_TIMEOUT
-    }
-
-    public xAuthTask() {
-    }
-
-    public xAuthTask(String playerName, int taskId, xAuthTaskType taskType) {
-        this.taskId = taskId;
+    public DelayedPlayerExactTask(xAuthTasks xauthTasks, String playerName) {
+        this.xauthTasks = xauthTasks;
         this.playerName = playerName;
-        this.taskType = taskType;
     }
 
-    public int getTaskId() {
-        return this.taskId;
+    @Override
+    public void run() {
+        if (Bukkit.getPlayerExact(this.playerName) == null)
+            this.getTasks().getPlayerTask(this.playerName, xAuthTask.xAuthTaskType.DELAYED_PLAYER_EXACT).setResult(false);
     }
 
-    public String getPlayerName() {
-        return this.playerName;
-    }
-
-    public xAuthTaskType getType() {
-        return this.taskType;
-    }
-
-    public void setResult(boolean result) {
-        this.result = result;
-    }
-
-    public boolean getResult() {
-        return this.result;
+    public xAuthTasks getTasks() {
+        return this.xauthTasks;
     }
 
 }
