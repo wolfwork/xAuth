@@ -76,6 +76,7 @@ misc:
     active: '{RED}Your account is locked! Please contact an admin.'
     access-denied: '{RED}The access to ''{TARGET}'' is restricted.'
     invalid-command: '{RED}Command ''{TARGET}'' is not a valid command.'
+    command-from-console: '{RED}Command ''{TARGET}'' can not be executed from console.'
 
 admin:
     permission: '{RED}You do not have permission to use this command!'

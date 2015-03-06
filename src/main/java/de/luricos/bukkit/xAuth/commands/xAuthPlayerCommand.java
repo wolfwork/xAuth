@@ -29,16 +29,18 @@ import org.bukkit.entity.Player;
 /**
  * @author lycano
  */
-public abstract class xAuthAdminCommand extends xAuthCommand {
-
-    private boolean result = false;
+public class xAuthPlayerCommand extends xAuthCommand {
 
     protected boolean isAllowedCommand(final CommandSender sender, final String messageNode, final String... command) {
         if (sender instanceof Player) {
             return this.isAllowedCommand((Player) sender, messageNode, command);
         }
 
-        return (sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender);
+        if ((sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender)) {
+            this.getMessageHandler().sendMessage("misc.command-from-console", sender, command[0]);
+        }
+
+        return (!((sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender)));
     }
 
     protected boolean isAllowedCommand(final Player player, final String messageNode, final String... command) {
@@ -49,11 +51,4 @@ public abstract class xAuthAdminCommand extends xAuthCommand {
         return allowed;
     }
 
-    public void setResult(boolean result) {
-        this.result = result;
-    }
-
-    public boolean getResult() {
-        return this.result;
-    }
 }

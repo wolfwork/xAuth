@@ -1,5 +1,5 @@
 name: xAuth
-version: 2.4.4
+version: 2.5.0
 description: Advanced Authentication Plugin
 author: [CypherX, lycano]
 website: https://github.com/lycano/xAuth
@@ -47,14 +47,14 @@ commands:
 
 permissions:
   xauth.allow.player.command.register:
-    description: Allows players/groups to register when new registrations are disabled.
+    description: Allows players/groups to register when new registrations are enabled.
     default: false
   xauth.allow.player.command.login:
     description: Allows players to login with their registered password.
     default: true
   xauth.allow.player.command.logout:
     description: Allows players to use the logout command.
-    default: false
+    default: true
   xauth.allow.player.command.changepw:
     description: Allows players to change their own password.
     default: true

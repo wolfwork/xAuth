@@ -19,7 +19,7 @@
  */
 package de.luricos.bukkit.xAuth.commands.player;
 
-import de.luricos.bukkit.xAuth.commands.xAuthCommand;
+import de.luricos.bukkit.xAuth.commands.xAuthPlayerCommand;
 import de.luricos.bukkit.xAuth.events.xAuthQuitEvent;
 import de.luricos.bukkit.xAuth.utils.CommandLineTokenizer;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
@@ -30,7 +30,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class QuitCommand extends xAuthCommand implements CommandExecutor {
+public class QuitCommand extends xAuthPlayerCommand implements CommandExecutor {
 
     public QuitCommand() {
     }
