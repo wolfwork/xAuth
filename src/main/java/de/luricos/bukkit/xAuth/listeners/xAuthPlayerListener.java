@@ -21,7 +21,6 @@ package de.luricos.bukkit.xAuth.listeners;
 
 import de.luricos.bukkit.xAuth.events.*;
 import de.luricos.bukkit.xAuth.restrictions.PlayerRestrictionHandler;
-import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.utils.xAuthUtils;
 import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
@@ -183,34 +182,23 @@ public class xAuthPlayerListener extends xAuthEventListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        // can the player execute that command?
-        if (!canExecuteCommand(event.getPlayer(), event))
-            return;
-
-        // filter out xAuth commands in server.log due to a new MC-1.3.2 feature, depends on config option filter.commands
-        xAuthLog.filterMessage(event.getMessage());
-    }
-
-    private boolean canExecuteCommand(final Player player, final PlayerCommandPreprocessEvent event) {
         String[] commands = event.getMessage().toLowerCase().replaceFirst("/", "").split("\\s");
 
         // filter only foreign commands
         if (xAuth.getPlugin().getCommands().contains(commands[0]))
-            return true;
+            return;
+
+        Player player = event.getPlayer();
 
         PlayerRestrictionHandler restrictionHandler = new PlayerRestrictionHandler(player, event.getEventName(), commands);
         xAuthPlayer xp = playerManager.getPlayer(player.getName());
 
-        boolean allowed = this.isAllowedCommand(player, commands);
-
-        if (!allowed) {
+        if (!(this.isAllowedCommand(player, commands))) {
             this.sendCommandRestrictedMessage(xp, event, restrictionHandler, commands);
             this.callEvent(xAuthPlayerExecuteCommandEvent.Action.COMMAND_DENIED, xp.getStatus());
         }
 
         this.callEvent(xAuthPlayerExecuteCommandEvent.Action.COMMAND_ALLOWED, xp.getStatus());
-
-        return allowed;
     }
 
     private void sendCommandRestrictedMessage(final xAuthPlayer xp, final PlayerCommandPreprocessEvent event, final PlayerRestrictionHandler restrictionHandler, String[] commands) {

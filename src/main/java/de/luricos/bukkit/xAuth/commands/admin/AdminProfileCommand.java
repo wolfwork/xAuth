@@ -70,15 +70,22 @@ public class AdminProfileCommand extends xAuthAdminCommand {
 
         if (xp.isRegistered()) {
             sb.append("\n");
-            sb.append(ChatColor.WHITE + "Name : ").append(xp.getName()).append("\n");
+
+            if (xp.isOnline()) {
+                sb.append(ChatColor.WHITE + "Operator: ").append((xp.isOp()) ? "{true}" : "{false}").append("\n");
+            }
+
+            sb.append(ChatColor.WHITE + "Name : ").append(xp.getName());
             if ((xp.isOnline()) && xp.isAuthenticated()) {
-                sb.append(ChatColor.WHITE + "DisplayName : ").append(((xp.isAuthenticated()) ? xp.getPlayer().getDisplayName() : xp.getName())).append("\n");
+                sb.append(", " + ChatColor.WHITE + "DisplayName : ").append(((xp.isAuthenticated()) ? xp.getPlayer().getDisplayName() : xp.getName())).append("\n");
+            } else {
+                sb.append("\n");
             }
 
             sb.append(ChatColor.WHITE + "Authenticated : ").append(((xp.isAuthenticated()) ? "{true}" : "{false}")).append("\n");
             sb.append(ChatColor.WHITE + "Premium : ").append(((xp.isPremium()) ? "{true}" : ChatColor.RED + "{false}")).append("\n");
-            sb.append(ChatColor.WHITE + "Locked : ").append(((xp.isLocked()) ? "{true}" : "{false}")).append("\n");
-            sb.append(ChatColor.WHITE + "ResetPw : ").append(((xp.isReset()) ? "{true}" : "{false}")).append("\n");
+            sb.append(ChatColor.WHITE + "Locked : ").append(((xp.isLocked()) ? "{true}" : "{false}")).append(", ");
+            sb.append(ChatColor.WHITE + "ResetPw : ").append(((xp.isReset()) ? "{true}" : "{false}")).append(", ");
             sb.append(ChatColor.WHITE + "PWType : ").append(xp.getPasswordType().getName()).append("\n");
 
             if (xp.isOnline())

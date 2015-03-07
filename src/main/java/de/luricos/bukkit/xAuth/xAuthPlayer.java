@@ -23,6 +23,7 @@ import de.luricos.bukkit.xAuth.password.PasswordType;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.Timestamp;
@@ -75,6 +76,10 @@ public class xAuthPlayer {
 
     public Player getPlayer() {
         return Bukkit.getPlayerExact(this.playerName);
+    }
+
+    public OfflinePlayer getOfflinePlayer() {
+        return Bukkit.getOfflinePlayer(this.playerName);
     }
 
     public int getAccountId() {
@@ -184,6 +189,10 @@ public class xAuthPlayer {
 
     public boolean isRegistered() {
         return status != Status.GUEST;
+    }
+
+    public boolean isOp() {
+        return this.getPlayer().isOp();
     }
 
     public boolean isPremium() {

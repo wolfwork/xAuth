@@ -33,8 +33,6 @@ public class xAuthCommandFilter extends xAuthLogFilter {
 
     @Override
     public boolean isLoggable(LogRecord record) {
-        String logMessage = record.getMessage().toLowerCase();
-
-        return !logMessage.contains(this.message);
+        return !record.getMessage().matches(this.getMessage());
     }
 }

@@ -51,9 +51,12 @@ permissions:
     default: false
   xauth.allow.player.command.login:
     description: Allows players to login with their registered password.
-    default: true
+    default: false
   xauth.allow.player.command.logout:
     description: Allows players to use the logout command.
+    default: true
+  xauth.allow.player.command.quit:
+    description: Allows players to use the quit command.
     default: true
   xauth.allow.player.command.changepw:
     description: Allows players to change their own password.

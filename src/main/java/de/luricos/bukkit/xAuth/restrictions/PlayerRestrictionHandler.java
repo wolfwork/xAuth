@@ -133,7 +133,7 @@ public class PlayerRestrictionHandler extends PlayerRestrictionProvider {
                                   "Event: '" + this.getRestrictionNode().getEventName() + "', Section: '" + this.getRestrictionNode().getEventType() + "', Action: '" + this.getRestrictionNode().getAction() +"'");
                 break;
             case AUTHENTICATED:
-                result = !this.isRestricted();
+                result = !this.isAuthenticatedRestricted();
 
                 sendDelayedDebugMessage("[HQ Authed] PermissionNode: '" + this.getPermissionString() + "',  result: " + result + "\n" +
                                   "Event: '" + this.getRestrictionNode().getEventName() + "', Section: '" + this.getRestrictionNode().getEventType() + "', Action: '" + this.getRestrictionNode().getAction() + "'");
@@ -167,7 +167,7 @@ public class PlayerRestrictionHandler extends PlayerRestrictionProvider {
      * @return boolean true if the player is restricted
      *                 false if denied was found later or nothing was found (no permission set)
      */
-    private boolean isRestricted() {
+    private boolean isAuthenticatedRestricted() {
         boolean restrict = this.restrictDefault;
 
         // check if the user is allowed to do so else check for denied flag if nothing found allow actions, restrict = false
@@ -175,7 +175,7 @@ public class PlayerRestrictionHandler extends PlayerRestrictionProvider {
         if (getPermissionManager().has(getPlayer(), this.getAllowedPermissionString())) {
             this.permissionString = this.getAllowedPermissionString();
             restrict = false;
-        } else  if (getPermissionManager().has(getPlayer(), this.getDeniedPermissionString())) {
+        } else if (getPermissionManager().has(getPlayer(), this.getDeniedPermissionString())) {
             this.permissionString = this.getDeniedPermissionString();
             restrict = true;
         }
