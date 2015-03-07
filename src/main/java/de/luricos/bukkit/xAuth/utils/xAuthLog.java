@@ -154,6 +154,25 @@ public class xAuthLog {
      * See commandsFilterExcludeList for excluded commands.
      */
     private static void addMincecraftCoreFilter() {
+        // get the logger that produces the message and get the configuration instance
+        org.apache.logging.log4j.core.Logger mcCoreLogger = getMinecraftCoreLogger();
+        org.apache.logging.log4j.core.LoggerContext mcCoreLoggerContext = (org.apache.logging.log4j.core.LoggerContext) mcCoreLogger.getContext();
+        org.apache.logging.log4j.core.config.BaseConfiguration mcCoreLoggerConfiguration = (org.apache.logging.log4j.core.config.BaseConfiguration) mcCoreLoggerContext.getConfiguration();
+
+        //<RegexFilter regex=".*:\s/(register|login|logout|quit|changepw|xauth|l|q|changepassword|changepass|cpw|x).*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        //<RegexFilter regex=regex onMatch="DENY" onMismatch="NEUTRAL"/>
+
+        // create a RegexFilter
+        createCommandFilter();
+
+        info("Adding xAuthLog4jCommandFilter to MinecraftCoreLogger ...");
+
+        mcCoreLoggerConfiguration.addLoggerFilter(mcCoreLogger, commandFilter);
+
+        info("Done adding xAuthLog4jCommandFilter to MinecraftCoreLogger.");
+    }
+
+    private static void createCommandFilter() {
         // build regex
         info("Building xAuthLog4jCommandFilter RegularExpression ...");
         StringBuilder sb = new StringBuilder();
@@ -166,15 +185,8 @@ public class xAuthLog {
         sb.deleteCharAt(sb.length()-1);
 
         String regex = ".*:\\s/(" + sb.toString() + ").*";
-        info("Done building xAuthLog4jCommandFilter RegularExpression. RegEx is: '" + regex + "'");
 
-        // get the logger that produces the message and get the configuration instance
-        org.apache.logging.log4j.core.Logger mcCoreLogger = getMinecraftCoreLogger();
-        org.apache.logging.log4j.core.LoggerContext mcCoreLoggerContext = (org.apache.logging.log4j.core.LoggerContext) mcCoreLogger.getContext();
-        org.apache.logging.log4j.core.config.BaseConfiguration mcCoreLoggerConfiguration = (org.apache.logging.log4j.core.config.BaseConfiguration) mcCoreLoggerContext.getConfiguration();
-
-        //<RegexFilter regex=".*:\s/(register|login|logout|quit|changepw|xauth|l|q|changepassword|changepass|cpw|x).*" onMatch="DENY" onMismatch="NEUTRAL"/>
-        //<RegexFilter regex=regex onMatch="DENY" onMismatch="NEUTRAL"/>
+        info("Done building xAuthLog4jCommandFilter RegularExpression. Creating filter ...");
 
         // use a RegexFilter
         commandFilter = RegexFilter.createFilter(
@@ -184,29 +196,33 @@ public class xAuthLog {
                 org.apache.logging.log4j.core.Filter.Result.NEUTRAL.name()
         );
 
-        info("Adding xAuthLog4jCommandFilter to MinecraftCoreLogger ...");
-
-        mcCoreLoggerConfiguration.addLoggerFilter(mcCoreLogger, commandFilter);
-
-        info("Done adding xAuthLog4jCommandFilter to MinecraftCoreLogger.");
+        info("Filter is now ready to use.");
     }
 
     public static void removeMincecraftCoreFilter() {
-        // get the logger that produces the message and get the configuration instance
-        org.apache.logging.log4j.core.Logger mcCoreLogger = getMinecraftCoreLogger();
-        org.apache.logging.log4j.core.LoggerContext mcCoreLoggerContext = (org.apache.logging.log4j.core.LoggerContext) mcCoreLogger.getContext();
-        org.apache.logging.log4j.core.config.BaseConfiguration mcCoreLoggerConfiguration = (org.apache.logging.log4j.core.config.BaseConfiguration) mcCoreLoggerContext.getConfiguration();
+        try {
+            // get the logger that produces the message and get the configuration instance
+            org.apache.logging.log4j.core.Logger mcCoreLogger = getMinecraftCoreLogger();
+            org.apache.logging.log4j.core.LoggerContext mcCoreLoggerContext = (org.apache.logging.log4j.core.LoggerContext) mcCoreLogger.getContext();
+            org.apache.logging.log4j.core.config.BaseConfiguration mcCoreLoggerConfiguration = (org.apache.logging.log4j.core.config.BaseConfiguration) mcCoreLoggerContext.getConfiguration();
 
-        info("Trying to remove RegexFilter from MinecraftCoreLogger.");
+            info("Trying to remove RegexFilter from MinecraftCoreLogger.");
 
-        // remove the filter if it is attached
-        String name = mcCoreLogger.getName();
-        org.apache.logging.log4j.core.config.LoggerConfig lc = mcCoreLoggerConfiguration.getLogger(name);
-        if (lc.getName().equals(name)) {
-            lc.removeFilter(commandFilter);
+            if (commandFilter == null) {
+                createCommandFilter();
+            }
+
+            // remove the filter if it is attached
+            String name = mcCoreLogger.getName();
+            org.apache.logging.log4j.core.config.LoggerConfig lc = mcCoreLoggerConfiguration.getLogger(name);
+            if (lc.getName().equals(name)) {
+                lc.removeFilter(commandFilter);
+            }
+
+            info("Filter removed.");
+        } catch (NullPointerException e) {
+            warning("RegExFilter not found.");
         }
-
-        info("Filter removed.");
     }
 
     private static String getMinecraftLoggerClassName() {
