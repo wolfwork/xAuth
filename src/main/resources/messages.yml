@@ -187,6 +187,7 @@ admin:
     config:
         usage: '{RED}Correct Usage: /xauth config <node> <value>'
         error:
+            is-section: '{RED}This node is a section and cannot be configured!'
             exist: '{RED}This configuration node does not exist!'
             int: '{RED}This configuration node requires an integer value!'
             invalid: '{RED}This setting cannot be altered using this command!'

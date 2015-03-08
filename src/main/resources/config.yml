@@ -56,27 +56,27 @@ guest:
     hide-inventory: true
     protect-location: true
     gamemode: 'ADVENTURE'
-    restrict:
+    allow:
         player:
-            chat: true
-            interact: true
-            move: true
-            pickup: true
+            chat: false
+            interact: false
+            move: false
+            pickup: false
             command:
-                register: false
-                login: false
-                l: false
-            damage: true
-            regain: true
-            level: true
-            splash: true
-            target: true
+                register: true
+                login: true
+                quit: true
+            damage: false
+            regain: false
+            level: false
+            splash: false
+            target: false
         block:
-            place: true
-            break: true
+            place: false
+            break: false
         entity:
-            damage: true
-            target: true
+            damage: false
+            target: false
 session:
     length: 3600
     verifyip: true

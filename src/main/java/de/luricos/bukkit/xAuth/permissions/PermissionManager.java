@@ -19,7 +19,8 @@
  */
 package de.luricos.bukkit.xAuth.permissions;
 
-import de.luricos.bukkit.xAuth.events.xAuthSystemEvent;
+import de.luricos.bukkit.xAuth.event.system.xAuthSystemEvent;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
@@ -64,15 +65,14 @@ public class PermissionManager {
             this.backend.initialize();
         }
 
-        this.callEvent(xAuthSystemEvent.Action.PERMISSION_BACKEND_CHANGED);
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("backendname", backendName);
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_CHANGED);
+        this.callEvent(new xAuthSystemEvent(properties));
     }
 
     protected void callEvent(xAuthSystemEvent event) {
         Bukkit.getServer().getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(xAuthSystemEvent.Action action) {
-        this.callEvent(new xAuthSystemEvent(action));
     }
 
     public void reset() {
@@ -80,7 +80,9 @@ public class PermissionManager {
             this.backend.reload();
         }
 
-        this.callEvent(xAuthSystemEvent.Action.RELOADED);
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthSystemEvent.Action.BACKEND_RELOADED);
+        this.callEvent(new xAuthSystemEvent(properties));
     }
 
     public void end() {

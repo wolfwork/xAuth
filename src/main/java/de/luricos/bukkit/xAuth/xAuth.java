@@ -22,8 +22,10 @@ package de.luricos.bukkit.xAuth;
 import de.luricos.bukkit.xAuth.auth.AuthMethod;
 import de.luricos.bukkit.xAuth.auth.AuthMethodSQL;
 import de.luricos.bukkit.xAuth.auth.AuthMethodURL;
-import de.luricos.bukkit.xAuth.commands.*;
-import de.luricos.bukkit.xAuth.commands.player.*;
+import de.luricos.bukkit.xAuth.command.player.*;
+import de.luricos.bukkit.xAuth.command.xAuthAdminCommands;
+import de.luricos.bukkit.xAuth.command.tabcomplete.xAuthAdminCommandsTabCompleter;
+import de.luricos.bukkit.xAuth.command.xAuthCommandProvider;
 import de.luricos.bukkit.xAuth.database.DatabaseController;
 import de.luricos.bukkit.xAuth.exceptions.xAuthNotAvailable;
 import de.luricos.bukkit.xAuth.listeners.*;
@@ -44,8 +46,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 public class xAuth extends JavaPlugin {
@@ -61,7 +61,7 @@ public class xAuth extends JavaPlugin {
     private Configuration config;
     private Updater updater;
 
-    private List<String> commands = new ArrayList<String>();
+    private xAuthCommandProvider commandProvider;
 
     private String h2Version = "1.3.164";
     //private String libURLPath = "http://bukkit.luricos.de/plugins/xAuth/lib/";
@@ -184,7 +184,7 @@ public class xAuth extends JavaPlugin {
         getCommand("quit").setExecutor(new QuitCommand());
         getCommand("changepw").setExecutor(new ChangePwdCommand());
 
-        // register xauth admin commands
+        // configure xauth admin commands
         xAuthAdminCommands adminCommands = new xAuthAdminCommands();
         adminCommands.setAliasCommand("changepw", "cpw");
         adminCommands.setAliasCommand("changepw", "changepassword");
@@ -202,12 +202,11 @@ public class xAuth extends JavaPlugin {
         adminCommands.setAliasCommand("profile", "info");
 
         getCommand("xauth").setExecutor(adminCommands);
+        getCommand("xauth").setTabCompleter(new xAuthAdminCommandsTabCompleter());
 
-        // add commands to keyring
-        for (String command : this.getDescription().getCommands().keySet()) {
-            this.commands.add(command);
-            this.commands.addAll(this.getCommand(command).getAliases());
-        }
+        // create commands handler
+        this.commandProvider = new xAuthCommandProvider();
+        this.commandProvider.initialize();
 
         // enable command logging when set via config
         if (getConfig().getBoolean("filter.commands"))
@@ -217,8 +216,8 @@ public class xAuth extends JavaPlugin {
         //lol();
     }
 
-    public List<String> getCommands() {
-        return this.commands;
+    public xAuthCommandProvider getCommandProvider() {
+        return this.commandProvider;
     }
 
     private void registerEvents() {

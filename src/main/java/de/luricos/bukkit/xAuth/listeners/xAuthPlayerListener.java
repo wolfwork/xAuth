@@ -19,8 +19,11 @@
  */
 package de.luricos.bukkit.xAuth.listeners;
 
-import de.luricos.bukkit.xAuth.events.*;
-import de.luricos.bukkit.xAuth.restrictions.PlayerRestrictionHandler;
+import de.luricos.bukkit.xAuth.command.xAuthCommandMap;
+import de.luricos.bukkit.xAuth.command.xAuthCommandProvider;
+import de.luricos.bukkit.xAuth.event.player.*;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
+import de.luricos.bukkit.xAuth.permissions.provider.PlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.utils.xAuthUtils;
 import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
@@ -48,6 +51,9 @@ public class xAuthPlayerListener extends xAuthEventListener {
 
         Player player = event.getPlayer();
         String message;
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("playername", player.getName());
+
         if (player.isOnline()) {
             xAuthPlayer xp = playerManager.getPlayer(player);
             boolean reverse = xAuth.getPlugin().getConfig().getBoolean("single-session.reverse");
@@ -64,7 +70,9 @@ public class xAuthPlayerListener extends xAuthEventListener {
                 message = xAuth.getPlugin().getMessageHandler().getNode("join.error.online");
                 event.disallow(Result.KICK_OTHER, message);
 
-                this.callEvent(xAuthPlayerLoginEvent.Action.PLAYER_KICK, message);
+                properties.setProperty("action", xAuthPlayerLoginEvent.Action.PLAYER_KICK);
+                properties.setProperty("message", message);
+                this.callEvent(new xAuthPlayerLoginEvent(properties));
             }
         }
 
@@ -74,7 +82,9 @@ public class xAuthPlayerListener extends xAuthEventListener {
                 message = xAuth.getPlugin().getMessageHandler().getNode("join.error.lockout");
                 event.disallow(Result.KICK_OTHER, message);
 
-                this.callEvent(xAuthPlayerLoginEvent.Action.PLAYER_KICK, message);
+                properties.setProperty("action", xAuthPlayerLoginEvent.Action.PLAYER_KICK);
+                properties.setProperty("message", message);
+                this.callEvent(new xAuthPlayerLoginEvent(properties));
             }
         }
 
@@ -82,7 +92,9 @@ public class xAuthPlayerListener extends xAuthEventListener {
             event.disallow(Result.KICK_OTHER, xAuth.getPlugin().getMessageHandler().getNode("join.error.name"));
         }
 
-        this.callEvent(xAuthPlayerLoginEvent.Action.PLAYER_LOGGED_IN, null);
+        properties.setProperty("action", xAuthPlayerLoginEvent.Action.PLAYER_LOGGED_IN);
+        properties.setProperty("message", "");
+        this.callEvent(new xAuthPlayerLoginEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -127,7 +139,11 @@ public class xAuthPlayerListener extends xAuthEventListener {
 
         playerManager.getTasks().scheduleDelayedPremiumCheck(playerName);
 
-        this.callEvent(xAuthPlayerJoinEvent.Action.PLAYER_JOINED);
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerJoinEvent.Action.PLAYER_JOINED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", playerName);
+        this.callEvent(new xAuthPlayerJoinEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -155,7 +171,11 @@ public class xAuthPlayerListener extends xAuthEventListener {
         plugin.getPlayerManager().releasePlayer(playerName);
         plugin.getPlayerManager().getTasks().cancelTasks(playerName);
 
-        this.callEvent(xAuthPlayerQuitEvent.Action.PLAYER_DISCONNECTED);
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerQuitEvent.Action.PLAYER_DISCONNECTED);
+        properties.setProperty("playername", playerName);
+        properties.setProperty("message", event.getQuitMessage());
+        this.callEvent(new xAuthPlayerQuitEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -164,7 +184,13 @@ public class xAuthPlayerListener extends xAuthEventListener {
             return;
 
         event.setCancelled(true);
-        this.callEvent(xAuthPlayerChatEvent.Action.CHAT_CANCELLED, playerManager.getPlayer(event.getPlayer().getName()).getStatus());
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerChatEvent.Action.CHAT_CANCELLED);
+        properties.setProperty("status", playerManager.getPlayer(event.getPlayer().getName()).getStatus());
+        properties.setProperty("playername", event.getPlayer().getName());
+        properties.setProperty("message", event.getMessage());
+        this.callEvent(new xAuthPlayerChatEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -173,36 +199,62 @@ public class xAuthPlayerListener extends xAuthEventListener {
             return;
 
         event.setCancelled(true);
-        this.callEvent(xAuthPlayerChatEvent.Action.CHAT_CANCELLED, playerManager.getPlayer(event.getPlayer().getName()).getStatus());
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerChatEvent.Action.CHAT_CANCELLED);
+        properties.setProperty("status", playerManager.getPlayer(event.getPlayer().getName()).getStatus());
+        properties.setProperty("playername", event.getPlayer().getName());
+        properties.setProperty("message", event.getMessage());
+        this.callEvent(new xAuthPlayerChatEvent(properties));
     }
 
     private boolean hasPlayerChatPermission(Player player, Event event) {
-        return new PlayerRestrictionHandler(player, "PlayerChatEvent", player).hasPermission();
+        return new PlayerPermissionHandler(player, "PlayerChatEvent", player).hasPermission();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        String[] commands = event.getMessage().toLowerCase().replaceFirst("/", "").split("\\s");
+        String[] commands = event.getMessage().replaceFirst("/", "").split("\\s");
+        String command = commands[0].toLowerCase();
 
-        // filter only foreign commands
-        if (xAuth.getPlugin().getCommands().contains(commands[0]))
-            return;
+        // init commandProvider
+        xAuthCommandProvider commandProvider = xAuth.getPlugin().getCommandProvider();
+        xAuthCommandMap xauthCommand = commandProvider.getCommandMap("xauth");
 
-        Player player = event.getPlayer();
+        // map alias to command if we are responsible for that command
+        // exclude xauth and x alias so we can block it
+        if (commandProvider.isResponsible(command)) {
+            String aliasCommand = commandProvider.getAliasCommand(command);
+            if (aliasCommand != null) {
+                event.setMessage(event.getMessage().replaceFirst(command, aliasCommand));
+                command = aliasCommand;
+                commands[0] = command;
+            }
 
-        PlayerRestrictionHandler restrictionHandler = new PlayerRestrictionHandler(player, event.getEventName(), commands);
-        xAuthPlayer xp = playerManager.getPlayer(player.getName());
-
-        if (!(this.isAllowedCommand(player, commands))) {
-            this.sendCommandRestrictedMessage(xp, event, restrictionHandler, commands);
-            this.callEvent(xAuthPlayerExecuteCommandEvent.Action.COMMAND_DENIED, xp.getStatus());
+            if (!((xauthCommand.getCommand().equals(command) || xauthCommand.getAlias().equals(command))))
+                return;
         }
 
-        this.callEvent(xAuthPlayerExecuteCommandEvent.Action.COMMAND_ALLOWED, xp.getStatus());
+        Player player = event.getPlayer();
+        PlayerPermissionHandler permissionHandler = new PlayerPermissionHandler(player, event.getEventName(), commands);
+
+        xAuthPlayer xp = playerManager.getPlayer(player.getName());
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("playername", player.getName());
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("command", command);
+        if (this.isAllowedCommand(player, commands)) {
+            properties.setProperty("action", xAuthPlayerExecuteCommandEvent.Action.COMMAND_ALLOWED);
+        } else {
+            this.sendCommandRestrictedMessage(xp, event, permissionHandler, commands);
+            properties.setProperty("action", xAuthPlayerExecuteCommandEvent.Action.COMMAND_DENIED);
+        }
+        this.callEvent(new xAuthPlayerExecuteCommandEvent(properties));
     }
 
-    private void sendCommandRestrictedMessage(final xAuthPlayer xp, final PlayerCommandPreprocessEvent event, final PlayerRestrictionHandler restrictionHandler, String[] commands) {
-        playerManager.sendNotice(xp, restrictionHandler.getRestrictionNode().getAction() + '.' + commands[0]);
+    private void sendCommandRestrictedMessage(final xAuthPlayer xp, final PlayerCommandPreprocessEvent event, final PlayerPermissionHandler permissionHandler, String[] commands) {
+        playerManager.sendNotice(xp, permissionHandler.getPermissionNode().getAction() + '.' + commands[0]);
         event.setMessage("/");
         event.setCancelled(true);
     }
@@ -220,7 +272,12 @@ public class xAuthPlayerListener extends xAuthEventListener {
         playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerDropItemEvent.Action.ITEMDROP_DENIED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerDropItemEvent.Action.ITEMDROP_DENIED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", xp.getName());
+        properties.setProperty("itemtype", event.getItemDrop().getItemStack().getData().getItemType().name());
+        this.callEvent(new xAuthPlayerDropItemEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -235,7 +292,12 @@ public class xAuthPlayerListener extends xAuthEventListener {
         playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerInteractEntityEvent.Action.INTERACT_WITH_ENTITY_DENIED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerInteractEntityEvent.Action.INTERACT_WITH_ENTITY_DENIED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", xp.getName());
+        properties.setProperty("interactwithentity", interactWithEntity.getClass().getSimpleName());
+        this.callEvent(new xAuthPlayerInteractEntityEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -249,7 +311,12 @@ public class xAuthPlayerListener extends xAuthEventListener {
         playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerInteractEvent.Action.INTERACT_DENIED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerInteractEvent.Action.INTERACT_DENIED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", xp.getName());
+        properties.setProperty("clickedblock", event.getClickedBlock().getClass().getSimpleName());
+        this.callEvent(new xAuthPlayerInteractEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -265,11 +332,9 @@ public class xAuthPlayerListener extends xAuthEventListener {
         xAuthPlayer xp = playerManager.getPlayer(event.getPlayer());
 
         World w = xp.getPlayer().getWorld();
-
-        Location loc = xAuth.getPlugin().getConfig().getBoolean("guest.protect-location") ?
-                xAuth.getPlugin().getLocationManager().getLocation(w) : xp.getPlayerData().getLocation();
-
+        Location loc = (xAuth.getPlugin().getConfig().getBoolean("guest.protect-location")) ? xAuth.getPlugin().getLocationManager().getLocation(w) : xp.getPlayerData().getLocation();
         Location testLoc = new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ());
+
         // @TODO check if this is causing PlayerDeath
         while ((w.getBlockAt(testLoc).isEmpty() || w.getBlockAt(testLoc).isLiquid()) && testLoc.getY() >= 0) {
             testLoc.setY((int) testLoc.getY() - 1);
@@ -283,7 +348,11 @@ public class xAuthPlayerListener extends xAuthEventListener {
         event.setTo(loc);
         playerManager.sendNotice(xp);
 
-        this.callEvent(xAuthPlayerMoveEvent.Action.MOVE_DENIED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerMoveEvent.Action.MOVE_DENIED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", xp.getName());
+        this.callEvent(new xAuthPlayerMoveEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -293,7 +362,12 @@ public class xAuthPlayerListener extends xAuthEventListener {
 
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerPickupItemEvent.Action.PICKUP_DENIED, playerManager.getPlayer(event.getPlayer().getName()).getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerPickupItemEvent.Action.PICKUP_DENIED);
+        properties.setProperty("status", playerManager.getPlayer(event.getPlayer().getName()).getStatus());
+        properties.setProperty("itemtype", event.getItem().getItemStack().getData().getItemType().name());
+        properties.setProperty("playername", event.getPlayer().getName());
+        this.callEvent(new xAuthPlayerPickupItemEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
@@ -302,9 +376,15 @@ public class xAuthPlayerListener extends xAuthEventListener {
         Player player = event.getPlayer();
         xAuthPlayer xp = playerManager.getPlayer(player);
 
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("oldgamemode", xp.getGameMode());
         xp.setGameMode(event.getNewGameMode());
 
-        this.callEvent(xAuthPlayerGameModeChangeEvent.Action.GAMEMODE_CHANGED, xp.getStatus());
+        properties.setProperty("newgamemode", event.getNewGameMode());
+        properties.setProperty("action", xAuthPlayerGameModeChangeEvent.Action.GAMEMODE_CHANGED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", xp.getName());
+        this.callEvent(new xAuthPlayerGameModeChangeEvent(properties));
     }
 
     private boolean isValidName(String pName) {
