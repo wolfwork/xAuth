@@ -430,7 +430,7 @@ public class PlayerManager {
             return true;
 
         // since whe are async use 115s for connection timeout and 250 for read timeout. Better for slow connections
-        HTTPRequest httpRequest = new HTTPRequest(String.format("http://minecraft.net/haspaid.jsp?user=%s", userName), 115, 250);
+        HTTPRequest httpRequest = new HTTPRequest(String.format("https://minecraft.net/haspaid.jsp?user=%s", userName), 115, 250);
         return Boolean.parseBoolean(httpRequest.getContent());
     }
 
