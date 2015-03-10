@@ -23,8 +23,8 @@ import de.luricos.bukkit.xAuth.auth.AuthMethod;
 import de.luricos.bukkit.xAuth.auth.AuthMethodSQL;
 import de.luricos.bukkit.xAuth.auth.AuthMethodURL;
 import de.luricos.bukkit.xAuth.command.player.*;
-import de.luricos.bukkit.xAuth.command.xAuthAdminCommands;
 import de.luricos.bukkit.xAuth.command.tabcomplete.xAuthAdminCommandsTabCompleter;
+import de.luricos.bukkit.xAuth.command.xAuthAdminCommands;
 import de.luricos.bukkit.xAuth.command.xAuthCommandProvider;
 import de.luricos.bukkit.xAuth.database.DatabaseController;
 import de.luricos.bukkit.xAuth.exceptions.xAuthNotAvailable;
@@ -33,6 +33,7 @@ import de.luricos.bukkit.xAuth.password.PasswordHandler;
 import de.luricos.bukkit.xAuth.permissions.PermissionBackend;
 import de.luricos.bukkit.xAuth.permissions.PermissionManager;
 import de.luricos.bukkit.xAuth.permissions.backends.BukkitSupport;
+import de.luricos.bukkit.xAuth.permissions.backends.GroupManagerSupport;
 import de.luricos.bukkit.xAuth.permissions.backends.PermissionsExSupport;
 import de.luricos.bukkit.xAuth.strike.StrikeManager;
 import de.luricos.bukkit.xAuth.tasks.xAuthTasks;
@@ -133,6 +134,7 @@ public class xAuth extends JavaPlugin {
         // Initialize permissions support
         // register Permission backends
         PermissionBackend.registerBackendAlias("pex", PermissionsExSupport.class);
+        PermissionBackend.registerBackendAlias("gm", GroupManagerSupport.class);
         PermissionBackend.registerBackendAlias("bukkit", BukkitSupport.class);
 
         // load config if not already done

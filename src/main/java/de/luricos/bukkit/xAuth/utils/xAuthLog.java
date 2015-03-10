@@ -196,7 +196,7 @@ public class xAuthLog {
                 org.apache.logging.log4j.core.Filter.Result.NEUTRAL.name()
         );
 
-        info("Filter is now ready to use.");
+        info("RegexFilter is now ready to use.");
     }
 
     public static void removeMincecraftCoreFilter() {

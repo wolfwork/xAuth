@@ -38,6 +38,10 @@ public class xAuthSystemEvent extends xAuthEvent {
         return ((Action) this.getProperty("action"));
     }
 
+    public String getBackendName() {
+        return (String) this.getProperty("backendname");
+    }
+
     @Override
     public HandlerList getHandlers() {
         return handlers;
@@ -48,7 +52,6 @@ public class xAuthSystemEvent extends xAuthEvent {
     }
 
     public enum Action {
-        PERMISSION_BACKEND_CHANGED,
-        BACKEND_RELOADED
+        PERMISSION_BACKEND_CHANGED, PERMISSION_BACKEND_ENDED, PERMISSION_BACKEND_INITIALIZED, PERMISSION_BACKEND_RELOADED, PERMISSION_BACKEND_RELOADING, PERMISSION_BACKEND_LOADING, PERMISSION_BACKEND_READY
     }
 }
