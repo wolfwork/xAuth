@@ -153,14 +153,14 @@ public class xAuth extends JavaPlugin {
 
         // Test connection to database
         if (!databaseController.isConnectable()) {
-            xAuthLog.severe("Failed to establish " + databaseController.getDBMS() + " database connection!");
+            xAuthLog.severe("Failed to establish " + databaseController.getDatabaseManagerName() + " database connection!");
 
             // disable (for now, may change in the future)
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        xAuthLog.info("Successfully established connection to " + databaseController.getDBMS() + " database");
+        xAuthLog.info("Successfully established connection to " + databaseController.getDatabaseManagerName() + " database");
         databaseController.runUpdater();
 
         // Initialize ALL THE CLASSES

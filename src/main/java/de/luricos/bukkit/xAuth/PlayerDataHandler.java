@@ -19,7 +19,7 @@
  */
 package de.luricos.bukkit.xAuth;
 
-import de.luricos.bukkit.xAuth.database.Table;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.exceptions.xAuthPlayerDataException;
 import de.luricos.bukkit.xAuth.inventory.ItemData;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
@@ -97,10 +97,10 @@ public class PlayerDataHandler {
                 String sql;
                 if (plugin.getDatabaseController().isMySQL())
                     sql = String.format("INSERT IGNORE INTO `%s` VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                            plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                            plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
                 else
                     sql = String.format("INSERT INTO `%s` SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS (SELECT * FROM `%s` WHERE `playername` = ?)",
-                            plugin.getDatabaseController().getTable(Table.PLAYERDATA), plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                            plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA), plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
 
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, p.getName());
@@ -186,7 +186,7 @@ public class PlayerDataHandler {
 
             try {
                 String sql = String.format("SELECT * FROM `%s` WHERE `playername` = ?",
-                        plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                        plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, playerName);
                 rs = ps.executeQuery();
@@ -274,7 +274,7 @@ public class PlayerDataHandler {
         PreparedStatement ps = null;
         try {
             String sql = String.format("DELETE FROM `%s` WHERE `playername` = ?",
-                    plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                    plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
             ps = conn.prepareStatement(sql);
             ps.setString(1, playerName);
             ps.executeUpdate();

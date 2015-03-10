@@ -19,7 +19,7 @@
  */
 package de.luricos.bukkit.xAuth.database;
 
-public enum Table {
+public enum DatabaseTables {
     ACCOUNT("accounts"),
     LOCATION("locations"),
     LOCKOUT("lockouts"),
@@ -29,7 +29,7 @@ public enum Table {
 
     private String name;
 
-    Table(String name) {
+    DatabaseTables(String name) {
         this.name = name;
     }
 

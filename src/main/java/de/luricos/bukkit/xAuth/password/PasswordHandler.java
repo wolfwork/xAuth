@@ -19,7 +19,7 @@
  */
 package de.luricos.bukkit.xAuth.password;
 
-import de.luricos.bukkit.xAuth.database.Table;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
 
@@ -51,7 +51,7 @@ public class PasswordHandler {
 
         try {
             String sql = String.format("SELECT `password`, `pwtype` FROM `%s` WHERE `id` = ?",
-                    plugin.getDatabaseController().getTable(Table.ACCOUNT));
+                    plugin.getDatabaseController().getTable(DatabaseTables.ACCOUNT));
             ps = conn.prepareStatement(sql);
             ps.setInt(1, accountId);
             rs = ps.executeQuery();
@@ -94,7 +94,7 @@ public class PasswordHandler {
 
             try {
                 String sql = String.format("UPDATE `%s` SET `password` = ?, `pwtype` = ? WHERE `id` = ?",
-                        plugin.getDatabaseController().getTable(Table.ACCOUNT));
+                        plugin.getDatabaseController().getTable(DatabaseTables.ACCOUNT));
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, newHash);
                 ps.setInt(2, 0);
