@@ -34,6 +34,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
@@ -368,6 +369,25 @@ public class xAuthPlayerListener extends xAuthEventListener {
         properties.setProperty("itemtype", event.getItem().getItemStack().getData().getItemType().name());
         properties.setProperty("playername", event.getPlayer().getName());
         this.callEvent(new xAuthPlayerPickupItemEvent(properties));
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerShootBowEvent(EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player))
+            return;
+
+        Player player = (Player) event.getEntity();
+
+        if (this.isAllowed(player, event, player))
+            return;
+
+        event.setCancelled(true);
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerShootBowEvent.Action.SHOOT_BOW_DENIED);
+        properties.setProperty("status", playerManager.getPlayer(player.getName()).getStatus());
+        properties.setProperty("playername", player.getName());
+        this.callEvent(new xAuthPlayerShootBowEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
