@@ -31,7 +31,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * @author lycano
  */
-public class PlayerPermissionNode {
+public abstract class PlayerPermissionNode {
 
     protected String[] splitEventName;
     protected String eventName;
@@ -142,7 +142,6 @@ public class PlayerPermissionNode {
     }
 
     private String getEntityName(Entity entity) {
-
         if (entity instanceof ComplexEntityPart) {
             return getEntityName(((ComplexEntityPart) entity).getParent());
         }

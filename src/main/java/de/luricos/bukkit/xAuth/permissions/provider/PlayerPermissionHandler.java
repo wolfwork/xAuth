@@ -30,22 +30,30 @@ import org.bukkit.entity.Player;
  */
 public class PlayerPermissionHandler extends PlayerPermissionProvider {
 
-    private xAuthPlayer xPlayer;
+    private xAuthPlayer xauthPlayer;
     private Object[] obj;
     private xAuthPlayer.Status playerStatus;
 
     private PlayerPermissionNode permissionNode;
     private String permissionString;
+    private String primaryNode = "guest";
 
     private boolean debugPermissions = false;
     private boolean guestAccessDefault = false; // default deny for guests
 
     public PlayerPermissionHandler(final Player player, final String eventName, Object... obj) {
-        this.xPlayer = getPlayerManager().getPlayer(player.getName());
+        this.xauthPlayer = getPlayerManager().getPlayer(player.getName());
         this.obj = obj;
-        this.permissionNode =  new PlayerPermissionNode(eventName);
-        this.playerStatus = xPlayer.getStatus();
+        this.playerStatus = this.xauthPlayer.getStatus();
         this.debugPermissions = getConfig().getBoolean("permissions.debug", debugPermissions);
+
+        if (this.isAuthenticated()) {
+            this.permissionNode = new AuthenticatedPlayerPermissionNode(eventName);
+            this.primaryNode = "xauth";
+            return;
+        }
+
+        this.permissionNode = new GuestPlayerPermissionNode(eventName);
     }
 
     /**
@@ -54,7 +62,7 @@ public class PlayerPermissionHandler extends PlayerPermissionProvider {
      * @return xAuthPlayer
      */
     public xAuthPlayer getAuthPlayer() {
-        return this.xPlayer;
+        return this.xauthPlayer;
     }
 
     /**
@@ -63,7 +71,7 @@ public class PlayerPermissionHandler extends PlayerPermissionProvider {
      * @return Player Bukkit.getPlayerExact(String playerName)
      */
     public Player getPlayer() {
-        return this.xPlayer.getPlayer();
+        return this.xauthPlayer.getPlayer();
     }
 
     public Object getObject() {
@@ -71,15 +79,19 @@ public class PlayerPermissionHandler extends PlayerPermissionProvider {
     }
 
     public xAuthPlayer.Status getPlayerStatus() {
-        return playerStatus;
+        return this.playerStatus;
+    }
+
+    public String getPrimaryNode() {
+        return this.primaryNode;
     }
 
     public boolean isGuest() {
-        return getAuthPlayer().isGuest();
+        return this.getPlayerStatus().equals(xAuthPlayer.Status.GUEST);
     }
 
     public boolean isAuthenticated() {
-        return getAuthPlayer().isAuthenticated();
+        return this.getPlayerStatus().equals(xAuthPlayer.Status.AUTHENTICATED);
     }
 
     public boolean isRegistered() {
@@ -100,7 +112,7 @@ public class PlayerPermissionHandler extends PlayerPermissionProvider {
     }
 
     public String buildPermissionNode() {
-          return ((isAuthenticated() ? "xauth." : "guest.") + this.getPermissionNode().getPermissionNode(obj));
+        return (String.format("%s.%s", this.getPrimaryNode(), this.getPermissionNode().getPermissionNode(this.obj)));
     }
 
     public String getPermissionString() {
@@ -113,22 +125,10 @@ public class PlayerPermissionHandler extends PlayerPermissionProvider {
      * @return boolean true if not restricted false otherwise
      */
     public boolean hasPermission() {
-        boolean result = false;
-        switch (playerStatus) {
-            case GUEST:
-            case REGISTERED:
-                result = this.hasGuestAccess();
-
-                sendDelayedDebugMessage("[HQ Guest] ConfigNode: '" + this.getGuestConfigurationString() + "',  result: " + result + "\n" +
-                                  "Event: '" + this.getPermissionNode().getEventName() + "', Section: '" + this.getPermissionNode().getEventType() + "', Action: '" + this.getPermissionNode().getAction() +"'");
-                break;
-            case AUTHENTICATED:
-                result = this.hasAuthenticateAccess();
-
-                sendDelayedDebugMessage("[HQ Authed] PermissionNode: '" + this.getPermissionString() + "',  result: " + result + "\n" +
-                                  "Event: '" + this.getPermissionNode().getEventName() + "', Section: '" + this.getPermissionNode().getEventType() + "', Action: '" + this.getPermissionNode().getAction() + "'");
-                break;
-        }
+        boolean result = ((this.isAuthenticated()) ? this.hasAuthenticateAccess() : this.hasGuestAccess());
+        this.sendDelayedDebugMessage(String.format("[HQ %s] ConfigNode: '%s',  result: %s\nEvent: '%s', Section: '%s', Action: '%s'",
+                this.getPrimaryNode(), this.getGuestConfigurationString(), result, this.getPermissionNode().getEventName(), this.getPermissionNode().getEventType(), this.getPermissionNode().getAction()
+        ));
 
         return result;
     }
@@ -147,7 +147,7 @@ public class PlayerPermissionHandler extends PlayerPermissionProvider {
     }
 
     public String getGuestConfigurationString() {
-        return "guest." + this.getPermissionNode().getPermissionNode(obj);
+        return String.format("%s.%s", this.getPrimaryNode(), this.getPermissionNode().getPermissionNode(this.obj));
     }
 
     /**
