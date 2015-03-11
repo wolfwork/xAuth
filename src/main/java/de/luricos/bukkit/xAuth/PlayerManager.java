@@ -829,8 +829,11 @@ public class PlayerManager {
             }
 
             // insert if session does not exist
-            sql = String.format("INSERT INTO `%s` VALUES (?, ?, ?)",
-                    this.getTable(DatabaseTables.SESSION));
+            sql = String.format("INSERT INTO `%s` (`%s`, `%s`, `%s`) VALUES (?, ?, ?)",
+                    this.getTable(DatabaseTables.SESSION),
+                    this.getRow(DatabaseRows.SESSION_ACCOUNTID),
+                    this.getRow(DatabaseRows.SESSION_IPADDRESS),
+                    this.getRow(DatabaseRows.SESSION_LOGINTIME));
 
             ps = conn.prepareStatement(sql);
             ps.setInt(1, accountId);
