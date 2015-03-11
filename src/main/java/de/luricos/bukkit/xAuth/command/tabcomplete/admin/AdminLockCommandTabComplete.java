@@ -26,9 +26,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author lycano
  */
-public class AdminRegisterCommandTabComplete extends xAuthOfflinePlayerCommandTabCompletion {
+public class AdminLockCommandTabComplete extends xAuthOfflinePlayerCommandTabCompletion {
 
-    public AdminRegisterCommandTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public AdminLockCommandTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         super(sender, command, alias, args);
     }
+
 }
