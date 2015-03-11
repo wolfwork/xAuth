@@ -71,7 +71,7 @@ public class DatabaseUpdater {
     }
 
     public void runUpdate() {
-        for (Table tbl : dbCon.getActiveTables()) {
+        for (DatabaseTables tbl : dbCon.getActiveDatabaseTables()) {
             String tblId = tbl.toString().toLowerCase();
             String tblName = dbCon.getTable(tbl);
             List<String> updateFiles = loadUpdateFiles(tblId);
@@ -150,7 +150,7 @@ public class DatabaseUpdater {
 
     private List<String> loadUpdateFiles(String tblId) {
         List<String> updateFiles = new ArrayList<String>();
-        String updatePath = "sql/" + tblId + "/updates/" + dbCon.getDBMS().toLowerCase();
+        String updatePath = "sql/" + tblId + "/updates/" + dbCon.getDatabaseManagerName().toLowerCase();
 
         try {
             JarFile jar = new JarFile(plugin.getJar());
@@ -191,7 +191,7 @@ public class DatabaseUpdater {
         sql = sql.replace("{TABLE}", tblName);
         sql = sql.replace("{TABLE_ACCOUNT}",
 
-        plugin.getDatabaseController().getTable(Table.ACCOUNT)); // foreign key in session table
+        plugin.getDatabaseController().getTable(DatabaseTables.ACCOUNT)); // foreign key in session table
         return sql;
     }
 

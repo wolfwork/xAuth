@@ -23,7 +23,6 @@ import de.luricos.bukkit.xAuth.PlayerManager;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -31,15 +30,26 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 public class DelayedPremiumCheck extends BukkitRunnable {
 
+    private xAuthTasks xauthTasks;
     private String playerName = "";
 
-    public DelayedPremiumCheck(String playerName) {
+    public DelayedPremiumCheck(xAuthTasks xauthTasks, String playerName) {
+        this.xauthTasks = xauthTasks;
         this.playerName = playerName;
     }
 
     @Override
     public void run() {
-        if (Bukkit.getPlayerExact(this.playerName) == null)
+        this.getTasks().scheduleSyncDelayedTask(
+                this.playerName,
+                xAuthTask.xAuthTaskType.DELAYED_PLAYER_EXACT,
+                new DelayedPlayerExactTask(this.getTasks(), this.playerName),
+                1
+        );
+
+        xAuthTask delayedPlayerExact = this.getTasks().getPlayerTask(this.playerName, xAuthTask.xAuthTaskType.DELAYED_PLAYER_EXACT);
+
+        if (!(delayedPlayerExact.getResult()))
             return;
 
         PlayerManager playerManager = xAuth.getPlugin().getPlayerManager();
@@ -55,5 +65,9 @@ public class DelayedPremiumCheck extends BukkitRunnable {
         }
 
         xAuth.getPlugin().getPlayerManager().setPremium(xp.getAccountId(), userIsPremium);
+    }
+
+    public xAuthTasks getTasks() {
+        return this.xauthTasks;
     }
 }

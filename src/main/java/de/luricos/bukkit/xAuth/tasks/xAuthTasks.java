@@ -71,17 +71,21 @@ public class xAuthTasks {
      * @param playerName the players name
      */
     public void scheduleDelayedPremiumCheck(String playerName) {
-        if (!xAuth.getPlugin().isPremiumMode())
+        if (!(xAuth.getPlugin().isPremiumMode()))
             return;
 
-        this.scheduleSyncDelayedTask(playerName, xAuthTask.xAuthTaskType.DELAYED_PREMIUM_CHECK, new DelayedPremiumCheck(playerName), 1);
+        this.scheduleAsyncDelayedTask(playerName, xAuthTask.xAuthTaskType.DELAYED_PREMIUM_CHECK, new DelayedPremiumCheck(this, playerName), 1);
+    }
+    
+    public void scheduleAsyncDelayedTask(String playerName, xAuthTask.xAuthTaskType taskType, BukkitRunnable runnable, long delay) {
+        int taskId = Bukkit.getScheduler().scheduleAsyncDelayedTask(xAuth.getPlugin(), runnable, delay);
+        this.playerTaskList.put(taskId, new xAuthTask(playerName, taskId, taskType));
     }
 
     public void scheduleSyncDelayedTask(String playerName, xAuthTask.xAuthTaskType taskType, BukkitRunnable runnable, long delay) {
         int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(xAuth.getPlugin(), runnable, delay);
         this.playerTaskList.put(taskId, new xAuthTask(playerName, taskId, taskType));
     }
-
 
     public List<xAuthTask> getPlayerTasks(String playerName) {
         List<xAuthTask> playerTasks = new ArrayList<xAuthTask>();

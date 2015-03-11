@@ -21,7 +21,7 @@
 package de.luricos.bukkit.xAuth.auth;
 
 import com.avaje.ebean.validation.factory.EmailValidatorFactory;
-import de.luricos.bukkit.xAuth.database.Table;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.password.PasswordType;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
@@ -177,7 +177,7 @@ public class AuthMethodSQL extends AuthMethod {
 
         try {
             String sql = String.format("UPDATE `%s` SET `pwtype` = ?, `resetpw` = ? WHERE `id` = ?",
-                    plugin.getDatabaseController().getTable(Table.ACCOUNT));
+                    plugin.getDatabaseController().getTable(DatabaseTables.ACCOUNT));
             ps = conn.prepareStatement(sql);
             ps.setInt(1, pwType);
             ps.setInt(2, resetPw);
@@ -201,7 +201,7 @@ public class AuthMethodSQL extends AuthMethod {
 
         try {
             String sql = String.format("UPDATE `%s` SET `password` = ?, `pwtype`= ? WHERE `id` = ?",
-                    plugin.getDatabaseController().getTable(Table.ACCOUNT));
+                    plugin.getDatabaseController().getTable(DatabaseTables.ACCOUNT));
             ps = conn.prepareStatement(sql);
             ps.setString(1, plugin.getPasswordHandler().hash(newPass, PasswordType.getType(pwType)));
             ps.setInt(2, pwType);
@@ -240,7 +240,7 @@ public class AuthMethodSQL extends AuthMethod {
 
         try {
             String sql = String.format("SELECT COUNT(`id`) FROM `%s` WHERE `registerip` = ?",
-                    plugin.getDatabaseController().getTable(Table.ACCOUNT));
+                    plugin.getDatabaseController().getTable(DatabaseTables.ACCOUNT));
             ps = conn.prepareStatement(sql);
             ps.setString(1, ipaddress);
             rs = ps.executeQuery();

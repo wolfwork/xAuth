@@ -22,6 +22,7 @@ package de.luricos.bukkit.xAuth.permissions.backends;
 import de.luricos.bukkit.xAuth.permissions.PermissionBackend;
 import de.luricos.bukkit.xAuth.permissions.PermissionManager;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
+import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.anjocaido.groupmanager.permissions.AnjoPermissionsHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
@@ -43,54 +44,58 @@ public class GroupManagerSupport extends PermissionBackend {
     public void initialize() {
         Plugin testPlugin = Bukkit.getServer().getPluginManager().getPlugin(providerName);
         if ((testPlugin != null) && (Bukkit.getServer().getPluginManager().isPluginEnabled(providerName))) {
-            provider = (org.anjocaido.groupmanager.GroupManager) testPlugin;
+            this.provider = (org.anjocaido.groupmanager.GroupManager) testPlugin;
         }
+
         xAuthLog.info("Attached to GroupManager");
     }
 
     @Override
-    public void reload() {
+    public void end(){
         provider = null;
         xAuthLog.info("Detached from GroupManagerSupport");
+    }
 
+    @Override
+    public void reload() {
+        this.end();
         this.initialize();
     }
 
     @Override
     public boolean hasPermission(Player player, final String permissionString)
     {
-        AnjoPermissionsHandler handler = provider.getWorldsHolder().getWorldPermissions(player);
+        AnjoPermissionsHandler handler = this.provider.getWorldsHolder().getWorldPermissions(player);
         return handler != null && handler.has(player, permissionString);
     }
 
     @Override
     public boolean hasGroup(Player player, String groupName) {
-        AnjoPermissionsHandler handler = provider.getWorldsHolder().getWorldPermissions(player);
+        AnjoPermissionsHandler handler = this.provider.getWorldsHolder().getWorldPermissions(player);
         return handler != null && handler.inGroup(player.getName(), groupName);
     }
 
     @Override
     public boolean hasGroup(String playerName, String groupName) {
-        return true;
+        return this.hasGroup(Bukkit.getPlayerExact(playerName), groupName);
     }
 
     @Override
     public void joinGroup(Player player, String groupName) {
-        /*
         if (this.hasGroup(player, groupName))
             return;
 
-        OverloadedWorldHolder worldHolder = provider.getWorldsHolder().getWorldData(player.getWorld().getName());
+        OverloadedWorldHolder worldHolder = this.provider.getWorldsHolder().getWorldData(player.getWorld().getName());
         worldHolder.createGroup(groupName);
         worldHolder.createUser(player.getName());
 
         worldHolder.getUser(player.getName()).setGroup(worldHolder.getGroup(groupName));
         xAuthLog.info("Essentials user '" + player.getName() + "' created and joined group '" + groupName + "'");
-        */
     }
 
     @Override
     public void joinGroup(String playerName, String groupName) {
+        this.joinGroup(Bukkit.getPlayerExact(playerName), groupName);
     }
 
 }

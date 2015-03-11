@@ -19,14 +19,14 @@
  */
 package de.luricos.bukkit.xAuth;
 
-import de.luricos.bukkit.xAuth.database.Table;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.exceptions.xAuthPlayerDataException;
+import de.luricos.bukkit.xAuth.inventory.ItemData;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.enchantments.EnchantmentWrapper;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -39,7 +39,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 public class PlayerDataHandler {
     private final xAuth plugin;
@@ -49,9 +48,8 @@ public class PlayerDataHandler {
     }
 
     public void storeData(xAuthPlayer xp, Player p) {
-        PlayerInventory pInv = p.getInventory();
-        ItemStack[] items = pInv.getContents();
-        ItemStack[] armor = pInv.getArmorContents();
+        PlayerInventory inventory = p.getInventory();
+        ItemStack[] armor = inventory.getArmorContents();
         Location loc = p.isDead() ? null : p.getLocation();
         Collection<PotionEffect> potEffects = p.getActivePotionEffects();
         int fireTicks = p.isDead() ? 0 : p.getFireTicks();
@@ -62,20 +60,20 @@ public class PlayerDataHandler {
         String strArmor = null;
         String strLoc = null;
         String strPotFx = buildPotFxString(potEffects);
-        xp.setPlayerData(new PlayerData(items, armor, loc, potEffects, fireTicks, remainingAir, gameMode));
+        xp.setPlayerData(new PlayerData(inventory.getContents(), armor, loc, potEffects, fireTicks, remainingAir, gameMode));
 
         boolean hideInv = plugin.getConfig().getBoolean("guest.hide-inventory");
         boolean hideLoc = plugin.getConfig().getBoolean("guest.protect-location");
 
         if (hideInv) {
-            strItems = buildItemString(items);
-            strArmor = buildItemString(armor);
+            strItems = (new ItemData()).toString(inventory);
+            strArmor = (new ItemData().toString(armor));
 
-            pInv.clear();
-            pInv.setHelmet(null);
-            pInv.setChestplate(null);
-            pInv.setLeggings(null);
-            pInv.setBoots(null);
+            inventory.clear();
+            inventory.setHelmet(null);
+            inventory.setChestplate(null);
+            inventory.setLeggings(null);
+            inventory.setBoots(null);
         }
 
         if (hideLoc && !p.isDead()) {
@@ -83,8 +81,9 @@ public class PlayerDataHandler {
             p.teleport(plugin.getLocationManager().getLocation(p.getWorld()));
         }
 
-        for (PotionEffect effect : p.getActivePotionEffects())
+        for (PotionEffect effect : p.getActivePotionEffects()) {
             p.addPotionEffect(new PotionEffect(effect.getType(), 0, 0), true);
+        }
 
         p.setFireTicks(0);
         p.setRemainingAir(300);
@@ -98,10 +97,10 @@ public class PlayerDataHandler {
                 String sql;
                 if (plugin.getDatabaseController().isMySQL())
                     sql = String.format("INSERT IGNORE INTO `%s` VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                            plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                            plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
                 else
                     sql = String.format("INSERT INTO `%s` SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS (SELECT * FROM `%s` WHERE `playername` = ?)",
-                            plugin.getDatabaseController().getTable(Table.PLAYERDATA), plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                            plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA), plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
 
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, p.getName());
@@ -121,48 +120,6 @@ public class PlayerDataHandler {
                 plugin.getDatabaseController().close(conn, ps);
             }
         }
-    }
-
-    private String buildItemString(ItemStack[] items) {
-        StringBuilder sbItems = new StringBuilder();
-        StringBuilder sbAmount = new StringBuilder();
-        StringBuilder sbDurability = new StringBuilder();
-        StringBuilder sbEnchants = new StringBuilder();
-
-        for (ItemStack item : items) {
-            int itemId = 0;
-            int amount = 0;
-            short durability = 0;
-            Map<Enchantment, Integer> enchants = null;
-
-            if (item != null) {
-                itemId = item.getTypeId();
-                amount = item.getAmount();
-                durability = item.getDurability();
-                enchants = item.getEnchantments();
-
-                if (!enchants.keySet().isEmpty()) {
-                    for (Enchantment enchant : enchants.keySet()) {
-                        int id = enchant.getId();
-                        int level = enchants.get(enchant);
-                        sbEnchants.append(id + ":" + level + "-");
-                    }
-
-                    sbEnchants.deleteCharAt(sbEnchants.lastIndexOf("-"));
-                }
-            }
-
-            sbItems.append(itemId).append(",");
-            sbAmount.append(amount).append(",");
-            sbDurability.append(durability).append(",");
-            sbEnchants.append(",");
-        }
-
-        sbItems.deleteCharAt(sbItems.lastIndexOf(","));
-        sbAmount.deleteCharAt(sbAmount.lastIndexOf(","));
-        sbDurability.deleteCharAt(sbDurability.lastIndexOf(","));
-        sbEnchants.deleteCharAt(sbEnchants.lastIndexOf(","));
-        return sbItems.append(";").append(sbAmount).append(";").append(sbDurability).append(";").append(sbEnchants).toString();
     }
 
     private String buildPotFxString(Collection<PotionEffect> effects) {
@@ -185,33 +142,6 @@ public class PlayerDataHandler {
         return sbType.append(";").append(sbDur).append(";").append(sbAmp).toString();
     }
 
-    private ItemStack[] buildItemStack(String str) {
-        ItemStack[] items = null;
-        String[] itemSplit = str.split(";");
-        String[] itemid = itemSplit[0].split(",");
-        String[] amount = itemSplit[1].split(",");
-        String[] durability = itemSplit[2].split(",");
-        String[] enchants = itemSplit[3].split(",", -1);
-        items = new ItemStack[itemid.length];
-
-        for (int i = 0; i < items.length; i++) {
-            items[i] = new ItemStack(Integer.parseInt(itemid[i]), Integer.parseInt(amount[i]), Short.parseShort(durability[i]));
-
-            if (!enchants[i].isEmpty()) {
-                String[] itemEnchants = enchants[i].split("-");
-                for (String enchant : itemEnchants) {
-                    String[] enchantSplit = enchant.split(":");
-                    int id = Integer.parseInt(enchantSplit[0]);
-                    int level = Integer.parseInt(enchantSplit[1]);
-                    Enchantment e = new EnchantmentWrapper(id);
-                    items[i].addUnsafeEnchantment(e, level);
-                }
-            }
-        }
-
-        return items;
-    }
-
     private Collection<PotionEffect> buildPotFx(String str) {
         String[] effectSplit = str.split(";");
         String[] type = effectSplit[0].split(",");
@@ -227,10 +157,6 @@ public class PlayerDataHandler {
         }
 
         return effects;
-    }
-
-    public void restoreData(xAuthPlayer xp, Player p) {
-        restoreData(xp, p.getName());
     }
 
     //@TODO refactor
@@ -260,14 +186,23 @@ public class PlayerDataHandler {
 
             try {
                 String sql = String.format("SELECT * FROM `%s` WHERE `playername` = ?",
-                        plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                        plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, playerName);
                 rs = ps.executeQuery();
 
                 if (rs.next()) {
-                    items = buildItemStack(rs.getString("items"));
-                    armor = buildItemStack(rs.getString("armor"));
+                    try {
+                        items = (new ItemData()).fromString(rs.getString("items"));
+                    } catch (InvalidConfigurationException e) {
+                        xAuthLog.warning("Could not load items for player '" + playerName + "'", e);
+                    }
+
+                    try {
+                        armor = (new ItemData()).fromString(rs.getString("armor"));
+                    } catch (InvalidConfigurationException e) {
+                        xAuthLog.warning("Could not load armor items for player '" + playerName + "'", e);
+                    }
 
                     String rsLoc = rs.getString("location");
                     if (rsLoc != null) {
@@ -339,12 +274,12 @@ public class PlayerDataHandler {
         PreparedStatement ps = null;
         try {
             String sql = String.format("DELETE FROM `%s` WHERE `playername` = ?",
-                    plugin.getDatabaseController().getTable(Table.PLAYERDATA));
+                    plugin.getDatabaseController().getTable(DatabaseTables.PLAYERDATA));
             ps = conn.prepareStatement(sql);
             ps.setString(1, playerName);
             ps.executeUpdate();
         } catch (SQLException e) {
-            xAuthLog.severe("Could not delete playerdata record from database for player: " + playerName, e);
+            xAuthLog.severe("Could not delete playerdata record from database for player: '" + playerName + "'", e);
         } finally {
             plugin.getDatabaseController().close(conn, ps);
         }

@@ -19,11 +19,12 @@
  */
 package de.luricos.bukkit.xAuth.utils;
 
-import de.luricos.bukkit.xAuth.filter.xAuthLogFilter;
 import de.luricos.bukkit.xAuth.xAuth;
+import org.apache.logging.log4j.core.filter.RegexFilter;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Filter;
@@ -37,6 +38,8 @@ public class xAuthLog {
 
     private static List<xAuthLogFeatures> logFeatures = new ArrayList<xAuthLogFeatures>();
     private static List<String> commandsFilterList = new ArrayList<String>();
+    private static List<String> commandsFilterExcludeList = new ArrayList<String>(Arrays.asList("quit", "q", "logout"));
+    private static RegexFilter commandFilter;
 
     private static Filter logFilter;
 
@@ -74,6 +77,7 @@ public class xAuthLog {
         switch (feature) {
             case FILTER_COMMANDS:
                 setFilterCommands();
+                activateCommandFilter();
                 break;
         }
     }
@@ -127,28 +131,113 @@ public class xAuthLog {
     }
 
     public static void restoreFilter() {
-        info("Restoring xAuth default filter (NONE).");
-        if (logger.getFilter() instanceof xAuthLogFilter)
-            setFilterClass(((xAuthLogFilter) logger.getFilter()).getDelegate());
-
-        logger.setFilter(logFilter);
+        removeMincecraftCoreFilter();
     }
 
-    public static void filterMessage(final String message) {
+    public static void activateCommandFilter() {
         if (!(isFeatureEnabled(xAuthLogFeatures.FILTER_COMMANDS)))
             return;
 
-        // filter out implemented xAuth commands in server.log due to a new MC-1.3.2 feature
+        // remove the filter first if it exists
+        removeMincecraftCoreFilter();
+
+        // add minecraftCoreFilter at runtime
+        addMincecraftCoreFilter();
+    }
+
+    /**
+     * Since message "<player> issued server command: <command> <args>" is no longer part of PlayerCommandPreProcessEvent
+     * and was moved to log4j2 before the event is actually called. We need to attach ourselfs to that specific logging instance
+     * and add a filter.
+     *
+     * We do only filter xAuth commands such as login, register and so on that may include sensitive information.
+     * See commandsFilterExcludeList for excluded commands.
+     */
+    private static void addMincecraftCoreFilter() {
+        // get the logger that produces the message and get the configuration instance
+        org.apache.logging.log4j.core.Logger mcCoreLogger = getMinecraftCoreLogger();
+        org.apache.logging.log4j.core.LoggerContext mcCoreLoggerContext = (org.apache.logging.log4j.core.LoggerContext) mcCoreLogger.getContext();
+        org.apache.logging.log4j.core.config.BaseConfiguration mcCoreLoggerConfiguration = (org.apache.logging.log4j.core.config.BaseConfiguration) mcCoreLoggerContext.getConfiguration();
+
+        //<RegexFilter regex=".*:\s/(register|login|logout|quit|changepw|xauth|l|q|changepassword|changepass|cpw|x).*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        //<RegexFilter regex=regex onMatch="DENY" onMismatch="NEUTRAL"/>
+
+        // create a RegexFilter
+        createCommandFilter();
+
+        info("Adding xAuthLog4jCommandFilter to MinecraftCoreLogger ...");
+
+        mcCoreLoggerConfiguration.addLoggerFilter(mcCoreLogger, commandFilter);
+
+        info("Done adding xAuthLog4jCommandFilter to MinecraftCoreLogger.");
+    }
+
+    private static void createCommandFilter() {
+        // build regex
+        info("Building xAuthLog4jCommandFilter RegularExpression ...");
+        StringBuilder sb = new StringBuilder();
+
+        // remove all elements from commandsFilterList that are excluded
+        commandsFilterList.removeAll(commandsFilterExcludeList);
         for (String command: commandsFilterList) {
-            if (!message.toLowerCase().startsWith(command, 1))
-                continue;
-
-            setFilterClass(new xAuthLogFilter(logger.getFilter(), message));
-            break;
+            sb.append(command).append("|");
         }
+        sb.deleteCharAt(sb.length()-1);
 
-        // set filter each message filtering when enabled via config
-        logger.setFilter(logFilter);
+        String regex = ".*:\\s/(" + sb.toString() + ").*";
+
+        info("Done building xAuthLog4jCommandFilter RegularExpression. Creating filter ...");
+
+        // use a RegexFilter
+        commandFilter = RegexFilter.createFilter(
+                regex,
+                "true",
+                org.apache.logging.log4j.core.Filter.Result.DENY.name(),
+                org.apache.logging.log4j.core.Filter.Result.NEUTRAL.name()
+        );
+
+        info("RegexFilter is now ready to use.");
+    }
+
+    public static void removeMincecraftCoreFilter() {
+        try {
+            // get the logger that produces the message and get the configuration instance
+            org.apache.logging.log4j.core.Logger mcCoreLogger = getMinecraftCoreLogger();
+            org.apache.logging.log4j.core.LoggerContext mcCoreLoggerContext = (org.apache.logging.log4j.core.LoggerContext) mcCoreLogger.getContext();
+            org.apache.logging.log4j.core.config.BaseConfiguration mcCoreLoggerConfiguration = (org.apache.logging.log4j.core.config.BaseConfiguration) mcCoreLoggerContext.getConfiguration();
+
+            info("Trying to remove RegexFilter from MinecraftCoreLogger.");
+
+            if (commandFilter == null) {
+                createCommandFilter();
+            }
+
+            // remove the filter if it is attached
+            String name = mcCoreLogger.getName();
+            org.apache.logging.log4j.core.config.LoggerConfig lc = mcCoreLoggerConfiguration.getLogger(name);
+            if (lc.getName().equals(name)) {
+                lc.removeFilter(commandFilter);
+            }
+
+            info("Filter removed.");
+        } catch (NullPointerException e) {
+            warning("RegExFilter not found.");
+        }
+    }
+
+    private static String getMinecraftLoggerClassName() {
+        String[] packagePath = Bukkit.getServer().getClass().getPackage().getName().split("\\.");
+        String version = packagePath[packagePath.length - 1];
+
+        return "net.minecraft.server." + version + ".PlayerConnection";
+    }
+
+    public static org.apache.logging.log4j.Logger getMinecraftLogger() {
+        return org.apache.logging.log4j.LogManager.getLogger(getMinecraftLoggerClassName());
+    }
+
+    public static org.apache.logging.log4j.core.Logger getMinecraftCoreLogger() {
+        return (org.apache.logging.log4j.core.Logger) getMinecraftLogger();
     }
 
     public static String getLoggerName() {
@@ -188,16 +277,20 @@ public class xAuthLog {
         logger.log(Level.WARNING, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg));
     }
 
-    public static void severe(final String msg) {
-        logger.log(Level.SEVERE, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg));
-    }
-
     public static void info(final String msg, final Throwable e) {
         logger.log(Level.INFO, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg), e);
     }
 
     public static void warning(final String msg, final Throwable e) {
         logger.log(Level.WARNING, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg), e);
+    }
+
+    public static void debug(final String msg) {
+        finest(msg);
+    }
+
+    public static void severe(final String msg) {
+        logger.log(Level.SEVERE, "[" + getLoggerName() + "] " + xAuthUtils.replaceColors(msg));
     }
 
     public static void severe(final String msg, final Throwable e) {

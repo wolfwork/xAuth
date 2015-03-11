@@ -1,4 +1,4 @@
-# xAuth v2.4.4 Language File
+# xAuth v2.5.0 Language File
 # THIS HEADER IS USED AS A SIGNATURE. PLEASE DO NOT REMOVE.
 join:
     register: '{RED}You are not registered.{NEWLINE}{RED}Please register using /register <password>.'
@@ -74,7 +74,9 @@ misc:
     strikeout: 'You have entered too many invalid passwords!'
     reloaded: '{RED}Server reloaded, you must log in.'
     active: '{RED}Your account is locked! Please contact an admin.'
-    access-denied: '{RED}The access to ''{TARGET}'' is restricted'
+    access-denied: '{RED}The access to ''{TARGET}'' is restricted.'
+    invalid-command: '{RED}Command ''{TARGET}'' is not a valid command.'
+    command-from-console: '{RED}Command ''{TARGET}'' can not be executed from console.'
 
 admin:
     permission: '{RED}You do not have permission to use this command!'
@@ -185,6 +187,7 @@ admin:
     config:
         usage: '{RED}Correct Usage: /xauth config <node> <value>'
         error:
+            is-section: '{RED}This node is a section and cannot be configured!'
             exist: '{RED}This configuration node does not exist!'
             int: '{RED}This configuration node requires an integer value!'
             invalid: '{RED}This setting cannot be altered using this command!'

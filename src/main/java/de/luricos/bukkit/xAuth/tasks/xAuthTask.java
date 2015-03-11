@@ -27,9 +27,10 @@ public class xAuthTask {
     private int taskId = -1;
     private xAuthTaskType taskType = xAuthTaskType.UNDEFINED;
     private String playerName = null;
+    private boolean result = true;
 
     public enum xAuthTaskType {
-        UNDEFINED, DELAYED_PROTECT, DELAYED_MESSAGE, DELAYED_PREMIUM_CHECK, KICK_TIMEOUT
+        UNDEFINED, DELAYED_PROTECT, DELAYED_MESSAGE, DELAYED_PREMIUM_CHECK, DELAYED_PLAYER_EXACT, KICK_TIMEOUT
     }
 
     public xAuthTask() {
@@ -51,6 +52,14 @@ public class xAuthTask {
 
     public xAuthTaskType getType() {
         return this.taskType;
+    }
+
+    public void setResult(boolean result) {
+        this.result = result;
+    }
+
+    public boolean getResult() {
+        return this.result;
     }
 
 }
