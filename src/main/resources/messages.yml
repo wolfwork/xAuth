@@ -191,7 +191,7 @@ admin:
             exist: '{RED}This configuration node does not exist!'
             int: '{RED}This configuration node requires an integer value!'
             invalid: '{RED}This setting cannot be altered using this command!'
-        success: '{BRIGHTGREEN}Configuration updated! {WHITE}{TARGET}'
+        success: '{BRIGHTGREEN}Configuration updated!'
         value: '{BRIGHTGREEN}%s: {WHITE}%s'
 version:
     current-version: '{BRIGHTGREEN}xAuth version: %s'

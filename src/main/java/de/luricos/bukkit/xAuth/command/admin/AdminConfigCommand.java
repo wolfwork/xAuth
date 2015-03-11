@@ -126,7 +126,7 @@ public class AdminConfigCommand extends xAuthAdminCommand {
 
         if (!getVal) {
             xAuth.getPlugin().saveConfig();
-            this.getMessageHandler().sendMessage("admin.config.success", sender, node + " : " + value);
+            this.getMessageHandler().sendMessage("admin.config.success", sender);
 
             properties.setProperty("action", xAuthCommandAdminConfigEvent.Action.CONFIG_SUCCESS);
         } else {
