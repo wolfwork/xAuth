@@ -31,12 +31,12 @@ import java.util.List;
 /**
  * @author lycano
  */
-public class xAuthPlayerCommandTabCompletion extends xAuthCommandTabCompletion {
+public class xAuthOfflinePlayerCommandTabCompletion extends xAuthCommandTabCompletion {
 
     private List<String> arguments = new ArrayList<String>();
 
     //@TODO Use offlinePlayerIds from PlayerManager
-    public xAuthPlayerCommandTabCompletion(CommandSender sender, Command command, String alias, String[] args) {
+    public xAuthOfflinePlayerCommandTabCompletion(CommandSender sender, Command command, String alias, String[] args) {
         super(sender, command, alias, args);
 
         List<String> playerNames = new ArrayList<String>();

@@ -19,14 +19,14 @@
  */
 package de.luricos.bukkit.xAuth.command.tabcomplete.admin;
 
-import de.luricos.bukkit.xAuth.command.tabcomplete.xAuthPlayerCommandTabCompletion;
+import de.luricos.bukkit.xAuth.command.tabcomplete.xAuthOfflinePlayerCommandTabCompletion;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 /**
  * @author lycano
  */
-public class AdminActivateCommandTabComplete extends xAuthPlayerCommandTabCompletion {
+public class AdminActivateCommandTabComplete extends xAuthOfflinePlayerCommandTabCompletion {
 
     public AdminActivateCommandTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         super(sender, command, alias, args);
