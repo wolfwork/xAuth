@@ -19,6 +19,11 @@
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
         <repository>
+            <id>pex-repo</id>
+            <name>PermissionsEx Repository</name>
+            <url>http://pex-repo.aoeu.xyz/</url>
+        </repository>
+        <repository>
             <id>ess-repo</id>
             <url>http://repo.ess3.net/content/groups/public</url>
         </repository>
