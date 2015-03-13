@@ -27,7 +27,7 @@ public class xAuthCommandAlias {
     private String alias;
 
     public xAuthCommandAlias(String alias) {
-        this.alias = alias.toLowerCase();
+        this.alias = (alias != null) ? alias.toLowerCase() : "";
     }
 
     public String getAlias() {
