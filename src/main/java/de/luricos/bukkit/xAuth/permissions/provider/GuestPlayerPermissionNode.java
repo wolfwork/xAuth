@@ -26,15 +26,5 @@ public class GuestPlayerPermissionNode extends PlayerPermissionNode {
 
     public GuestPlayerPermissionNode(final String message) {
         super(message);
-
-    }
-
-    @Override
-    public String getPermissionNode(Object[] arguments) {
-        if (arguments[0].getClass().isAssignableFrom(String.class))
-            return this.assemblePermission(getPermissionNode(), arguments);
-
-        return this.getPermissionNode();
-
     }
 }

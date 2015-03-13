@@ -21,7 +21,9 @@ package de.luricos.bukkit.xAuth;
 
 import de.luricos.bukkit.xAuth.auth.AuthMethod;
 import de.luricos.bukkit.xAuth.command.xAuthPlayerCountType;
-import de.luricos.bukkit.xAuth.database.*;
+import de.luricos.bukkit.xAuth.database.DatabaseController;
+import de.luricos.bukkit.xAuth.database.DatabaseRows;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.event.player.xAuthPlayerProtectEvent;
 import de.luricos.bukkit.xAuth.event.player.xAuthPlayerUnProtectEvent;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;

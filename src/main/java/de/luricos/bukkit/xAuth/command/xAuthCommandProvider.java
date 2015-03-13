@@ -21,7 +21,10 @@ package de.luricos.bukkit.xAuth.command;
 
 import de.luricos.bukkit.xAuth.xAuth;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author lycano
@@ -38,8 +41,8 @@ public class xAuthCommandProvider {
         for (String pluginCommand: this.getPluginCommands()) {
             List<String> aliases = xAuth.getPlugin().getCommand(pluginCommand).getAliases();
 
-            if ((aliases == null)) {
-                this.addCommandMap(pluginCommand, new xAuthCommandMap(pluginCommand, null));
+            if ((aliases.size() == 0)) {
+                this.addCommandMap(pluginCommand, new xAuthCommandMap(pluginCommand, new xAuthCommandAlias(null)));
                 continue;
             }
 
