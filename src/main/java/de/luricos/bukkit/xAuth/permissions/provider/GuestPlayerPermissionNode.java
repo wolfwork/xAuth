@@ -19,6 +19,8 @@
  */
 package de.luricos.bukkit.xAuth.permissions.provider;
 
+import org.bukkit.entity.Player;
+
 /**
  * @author lycano
  */
@@ -26,5 +28,20 @@ public class GuestPlayerPermissionNode extends PlayerPermissionNode {
 
     public GuestPlayerPermissionNode(final String message) {
         super(message);
+    }
+
+    @Override
+    public String getPermissionNode(Object[] arguments) {
+        return this.assemblePermission(getPermissionNode(), this.filterGuestPermissionObj(arguments));
+    }
+
+    private Object[] filterGuestPermissionObj(Object[] arguments) {
+        Object objectType = arguments[0];
+
+        if (objectType instanceof Player) {
+            return new Object[0];
+        }
+
+        return arguments;
     }
 }
