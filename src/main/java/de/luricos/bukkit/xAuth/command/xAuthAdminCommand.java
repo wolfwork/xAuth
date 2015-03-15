@@ -19,6 +19,8 @@
  */
 package de.luricos.bukkit.xAuth.command;
 
+import de.luricos.bukkit.xAuth.permissions.PermissionType;
+import de.luricos.bukkit.xAuth.permissions.provider.CustomPlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.permissions.provider.PlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.command.CommandSender;
@@ -42,7 +44,7 @@ public abstract class xAuthAdminCommand extends xAuthCommand {
     }
 
     protected boolean isAllowedCommand(final Player player, final String messageNode, final String... command) {
-        boolean allowed = new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
+        boolean allowed = (((new CustomPlayerPermissionHandler(player, PermissionType.USE_ADMIN_COMMANDS)).hasPermission()) && ((new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command)).hasPermission()));
         if (!allowed)
             xAuth.getPlugin().getMessageHandler().sendMessage(messageNode, player);
 

@@ -24,6 +24,7 @@ import com.avaje.ebean.validation.factory.EmailValidatorFactory;
 import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.password.PasswordType;
 import de.luricos.bukkit.xAuth.permissions.PermissionType;
+import de.luricos.bukkit.xAuth.permissions.provider.CustomPlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
@@ -231,7 +232,7 @@ public class AuthMethodSQL extends AuthMethod {
 
     private boolean isWithinAccLimit(String ipaddress) {
         int limit = plugin.getConfig().getInt("registration.account-limit");
-        if (limit < 1 || xAuth.getPermissionManager().has(player.getPlayer(), PermissionType.BYPASS_ACCOUNT_LIMIT.getPermissionNode()))
+        if (limit < 1 || (new CustomPlayerPermissionHandler(player.getPlayer(), PermissionType.BYPASS_ACCOUNT_LIMIT)).hasPermission())
             return true;
 
         int count = 0;

@@ -8,8 +8,8 @@ import java.util.Map;
  * @author lycano
  */
 public enum PermissionType {
-    USE_ADMIN_COMMANDS("xauth.allow.player.use.admin.command"),
-    BYPASS_ACCOUNT_LIMIT("xauth.allow.player.account.bypass.limit");
+    USE_ADMIN_COMMANDS("security.player.use.admin.command"),
+    BYPASS_ACCOUNT_LIMIT("security.player.account.bypass.limit");
 
     /** The permission node. */
     private final String permissionNode;

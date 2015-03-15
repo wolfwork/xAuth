@@ -19,37 +19,44 @@
  */
 package de.luricos.bukkit.xAuth.permissions.provider;
 
+import de.luricos.bukkit.xAuth.permissions.PermissionType;
 import org.bukkit.entity.Player;
 
 /**
  * @author lycano
  */
-public class PlayerPermissionHandler extends AbstractPlayerPermissionHandler {
+public class CustomPlayerPermissionHandler extends AbstractPlayerPermissionHandler {
 
-    public PlayerPermissionHandler(final Player player, final String eventName, Object... obj) {
+    private String subSection = "internals";
+
+    public CustomPlayerPermissionHandler(Player player, PermissionType permissionType) {
+        this(player, permissionType.getPermissionNode());
+    }
+
+    public CustomPlayerPermissionHandler(Player player, String permission) {
         this.xauthPlayer = getPlayerManager().getPlayer(player.getName());
         this.obj = obj;
         this.playerStatus = this.xauthPlayer.getStatus();
 
         if (this.isAuthenticated()) {
-            this.permissionNode = new AuthenticatedPlayerPermissionNode(eventName);
             this.primaryNode = PermissionProviderPrimaryNode.XAUTH;
-            this.permissionString = String.format("%s.%s", this.getPrimaryNode().getName(), this.getPermissionNode().getPermissionNode(this.obj));
-            return;
+            this.permissionString = String.format("%s.%s", this.getPrimaryNode().getName(), permission);
+            this.subSection = this.buildSubSection();
         }
-
-        this.permissionNode = new GuestPlayerPermissionNode(eventName);
     }
 
-    /**
-     * Use this to check to check permissions depending on the players status
-     *
-     * @return boolean true if not restricted false otherwise
-     */
+    public String buildSubSection() {
+        return this.camelCaseFirst(this.getPermissionString().split("\\.")[1]);
+    }
+
+    public String getSubSection() {
+        return this.subSection;
+    }
+
     public boolean hasPermission() {
         boolean result = ((this.isAuthenticated()) ? this.hasAuthenticateAccess() : this.hasGuestAccess());
-        this.sendDelayedDebugMessage(String.format("[HQ %s] ConfigNode: '%s',  result: %s\nEvent: '%s', Section: '%s', Action: '%s'",
-                this.getPrimaryNode().getPrettyName(), this.getGuestConfigurationString(), result, this.getPermissionNode().getEventName(), this.getPermissionNode().getEventType(), this.getPermissionNode().getAction()
+        this.sendDelayedDebugMessage(String.format("[HQ %s %s ] Node: '%s',  result: %s",
+                this.getPrimaryNode().getPrettyName(), this.getSubSection(), this.getPermissionString(), result
         ));
 
         return result;
@@ -69,7 +76,7 @@ public class PlayerPermissionHandler extends AbstractPlayerPermissionHandler {
     }
 
     public String getGuestConfigurationString() {
-        return String.format("%s.%s", this.getPrimaryNode().getName(), this.getPermissionNode().getPermissionNode(this.obj));
+        return String.format("%s.%s", this.getPrimaryNode().getName(), this.getPermissionString());
     }
 
     /**
@@ -83,5 +90,4 @@ public class PlayerPermissionHandler extends AbstractPlayerPermissionHandler {
         // check if the user is allowed to do so else check for denied flag if nothing found allow actions, restrict = false
         return getPermissionManager().has(getPlayer(), this.getPermissionString());
     }
-
 }
