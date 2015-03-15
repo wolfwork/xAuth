@@ -68,6 +68,9 @@ public class ItemData {
     }
 
     public ItemStack[] fromString(String data) throws InvalidConfigurationException {
+        if (data == null)
+            return null;
+
         ConfigurationSection container = new YamlConfiguration();
         ((YamlConfiguration) container).loadFromString(data);
 
