@@ -32,7 +32,7 @@ import org.bukkit.command.CommandSender;
 public class AdminReloadCommand extends xAuthAdminCommand {
 
     public AdminReloadCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.reload")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.reload"))) {
             this.setResult(true);
             return;
         }

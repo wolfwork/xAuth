@@ -32,7 +32,7 @@ import org.bukkit.command.CommandSender;
 public class AdminVersionCommand extends xAuthAdminCommand {
 
     public AdminVersionCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.version")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.version"))) {
             this.setResult(true);
             return;
         }

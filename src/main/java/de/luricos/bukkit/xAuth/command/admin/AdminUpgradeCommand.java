@@ -34,7 +34,7 @@ import org.bukkit.command.CommandSender;
 public class AdminUpgradeCommand extends xAuthAdminCommand {
 
     public AdminUpgradeCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.upgrade")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.upgrade"))) {
             this.setResult(true);
             return;
         }

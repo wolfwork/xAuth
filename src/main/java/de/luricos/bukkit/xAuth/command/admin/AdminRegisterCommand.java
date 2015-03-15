@@ -36,7 +36,7 @@ import org.bukkit.command.CommandSender;
 public class AdminRegisterCommand extends xAuthAdminCommand {
 
     public AdminRegisterCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.register")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.register"))) {
             this.setResult(true);
             return;
         }

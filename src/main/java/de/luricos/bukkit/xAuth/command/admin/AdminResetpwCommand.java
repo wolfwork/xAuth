@@ -36,7 +36,7 @@ import org.bukkit.command.CommandSender;
 public class AdminResetpwCommand extends xAuthAdminCommand {
 
     public AdminResetpwCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.resetpw")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.resetpw"))) {
             this.setResult(true);
             return;
         }

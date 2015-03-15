@@ -33,7 +33,7 @@ import org.bukkit.command.CommandSender;
 public class AdminCountCommand extends xAuthAdminCommand {
 
     public AdminCountCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.count")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.count"))) {
             this.setResult(true);
             return;
         }

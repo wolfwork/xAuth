@@ -33,7 +33,7 @@ import org.bukkit.command.CommandSender;
 public class AdminActivateCommand extends xAuthAdminCommand {
 
     public AdminActivateCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.activate")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.activate"))) {
             this.setResult(true);
             return;
         }

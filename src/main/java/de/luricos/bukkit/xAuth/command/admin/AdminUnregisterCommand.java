@@ -34,7 +34,7 @@ import org.bukkit.entity.Player;
 public class AdminUnregisterCommand extends xAuthAdminCommand {
 
     public AdminUnregisterCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.unregister")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.unregister"))) {
             this.setResult(true);
             return;
         }

@@ -37,7 +37,7 @@ import java.text.SimpleDateFormat;
 public class AdminProfileCommand extends xAuthAdminCommand {
 
     public AdminProfileCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.profile")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.profile"))) {
             this.setResult(true);
             return;
         }

@@ -34,7 +34,7 @@ import org.bukkit.entity.Player;
 public class AdminLockCommand extends xAuthAdminCommand {
 
     public AdminLockCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.lock")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.lock"))) {
             this.setResult(true);
             return;
         }

@@ -42,7 +42,7 @@ public class AdminLocationCommand extends xAuthAdminCommand {
         }
 
         Player player = (Player) sender;
-        if (!this.isAllowedCommand(player, "admin.permission", "xauth.location")) {
+        if (!(this.isAllowedCommand(player, "admin.permission", "xauth.location"))) {
             this.setResult(true);
             return;
         }

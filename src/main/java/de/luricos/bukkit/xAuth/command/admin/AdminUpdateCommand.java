@@ -34,7 +34,7 @@ import org.bukkit.command.CommandSender;
 public class AdminUpdateCommand extends xAuthAdminCommand {
 
     public AdminUpdateCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.update")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.update"))) {
             this.setResult(true);
             return;
         }

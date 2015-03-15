@@ -34,7 +34,7 @@ import java.util.List;
 public class AdminConfigCommand extends xAuthAdminCommand {
 
     public AdminConfigCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.config")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.config"))) {
             this.setResult(true);
             return;
         }

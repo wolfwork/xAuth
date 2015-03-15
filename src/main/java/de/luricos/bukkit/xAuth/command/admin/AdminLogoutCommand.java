@@ -34,7 +34,7 @@ import org.bukkit.entity.Player;
 public class AdminLogoutCommand extends xAuthAdminCommand {
 
     public AdminLogoutCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.logout")) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.logout"))) {
             this.setResult(true);
             return;
         }
