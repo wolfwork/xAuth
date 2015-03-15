@@ -85,6 +85,7 @@ permissions:
         xauth.allow.player.command.xauth.version: true
         xauth.allow.player.command.xauth.update: true
         xauth.allow.player.command.xauth.upgrade: true
+        xauth.allow.player.use.admin.command: true
         xauth.allow.player.bypass.acclimit: true
   xauth.allow.player.command.xauth.register:
     description: Allows you to register other players
@@ -136,6 +137,9 @@ permissions:
     default: op
   xauth.allow.player.command.xauth.upgrade:
     description: Allows you to upgrade the plugin
+    default: op
+  xauth.allow.player.use.admin.command:
+    description: Allows you to use admin command. Additional check for players who give xauth.allow.*
     default: op
   xauth.allow.player.bypass.acclimit:
     description: Allows you to bypass the account limit and register an unlimited amount of accounts.
