@@ -19,7 +19,6 @@
  */
 package de.luricos.bukkit.xAuth.listeners;
 
-import de.luricos.bukkit.xAuth.command.xAuthCommandMap;
 import de.luricos.bukkit.xAuth.command.xAuthCommandProvider;
 import de.luricos.bukkit.xAuth.event.player.*;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
@@ -220,10 +219,8 @@ public class xAuthPlayerListener extends xAuthEventListener {
 
         // init commandProvider
         xAuthCommandProvider commandProvider = xAuth.getPlugin().getCommandProvider();
-        xAuthCommandMap xauthCommand = commandProvider.getCommandMap("xauth");
-
-        // map alias to command if we are responsible for that command
-        // exclude xauth and x alias so we can block it
+        // map alias to command if we are responsible for that command and return
+        // since every command has its own permission check
         if (commandProvider.isResponsible(command)) {
             String aliasCommand = commandProvider.getAliasCommand(command);
             if (aliasCommand != null) {
@@ -232,8 +229,7 @@ public class xAuthPlayerListener extends xAuthEventListener {
                 commands[0] = command;
             }
 
-            if (!((xauthCommand.getCommand().equals(command) || xauthCommand.getAlias().equals(command))))
-                return;
+            return;
         }
 
         Player player = event.getPlayer();
@@ -254,7 +250,7 @@ public class xAuthPlayerListener extends xAuthEventListener {
     }
 
     private boolean isAllowedCommand(final Player player, final String... command) {
-        return new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).checkPermission();
+        return new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
     }
 
     private void sendCommandRestrictedMessage(final xAuthPlayer xp, final PlayerCommandPreprocessEvent event, final PlayerPermissionHandler permissionHandler, String[] commands) {

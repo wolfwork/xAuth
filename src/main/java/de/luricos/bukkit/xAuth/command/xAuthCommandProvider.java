@@ -160,9 +160,9 @@ public class xAuthCommandProvider {
     }
 
     /**
-     * Lookup a command or alias and retunr the commandMap
+     * Lookup a command or alias and return the commandMap
      *
-     * @param commandOrAlias String the command or the alias to lookup
+     * @param commandOrAlias String the command or alias to lookup. If nothing found return null
      */
     public xAuthCommandMap lookup(String commandOrAlias) {
         if (this.hasAlias(commandOrAlias)) {
