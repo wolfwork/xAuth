@@ -19,6 +19,7 @@
  */
 package de.luricos.bukkit.xAuth.command;
 
+import de.luricos.bukkit.xAuth.exceptions.xAuthCommandException;
 import de.luricos.bukkit.xAuth.permissions.PermissionType;
 import de.luricos.bukkit.xAuth.permissions.provider.CustomPlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.permissions.provider.PlayerPermissionHandler;
@@ -60,8 +61,29 @@ public abstract class xAuthAdminCommand extends xAuthCommand {
         return (sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender);
     }
 
+    /**
+     * denied command target checks against SECURITY_DENY_ADMIN_COMMAND_TARGET_PREFIX
+     *
+     * @param player the player object
+     * @param messageNode the message node
+     * @param target the target to issue
+     * @param command the commands as string array. Null is not an acceptable argument!
+     *
+     * @return true if node is set via permission. False if node is not set
+     */
     protected boolean isDeniedCommandTarget(final Player player, final String messageNode, final String target, final String... command) {
-        boolean denied = (new CustomPlayerPermissionHandler(player, PermissionType.SECURITY_DENY_ADMIN_COMMAND_TARGET_PREFIX, target.toLowerCase())).hasPermission();
+        if (command.length == 0) {
+            throw new xAuthCommandException("Null is not a valid argument");
+        }
+
+        StringBuilder sb = new StringBuilder(command[0]);
+        for (String element: command) {
+            sb.append(".");
+            sb.append(element);
+        }
+        String targetNode = sb.toString() + "." + target.toLowerCase();
+
+        boolean denied = (new CustomPlayerPermissionHandler(player, PermissionType.SECURITY_DENY_ADMIN_COMMAND_TARGET_PREFIX, targetNode)).hasPermission();
         if (denied)
             xAuth.getPlugin().getMessageHandler().sendMessage(messageNode, player, target);
 
