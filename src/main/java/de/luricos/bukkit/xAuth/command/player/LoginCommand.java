@@ -44,12 +44,12 @@ public class LoginCommand extends xAuthPlayerCommand implements CommandExecutor 
             return true;
 
         Player player = (Player) sender;
-        if (xAuth.getPlugin().getPlayerManager().getPlayer(player).isAuthenticated()) {
+        if (this.getPlayerManager().getPlayer(player).isAuthenticated()) {
             this.getMessageHandler().sendMessage("login.error.authenticated", player);
             return true;
         }
 
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(player, true);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(player, true);
 
         if (args.length < 1) {
             this.getMessageHandler().sendMessage("login.usage", xp.getPlayer());
@@ -64,7 +64,7 @@ public class LoginCommand extends xAuthPlayerCommand implements CommandExecutor 
         String response = a.getResponse();
 
         if (passChecks) {
-            boolean success = xAuth.getPlugin().getPlayerManager().doLogin(xp);
+            boolean success = this.getPlayerManager().doLogin(xp);
             if (success) {
                 if (xAuth.getPlugin().isAuthURL() && xAuth.getPlugin().getConfig().getBoolean("authurl.broadcast-login") && response != null && response != "")
                     xAuth.getPlugin().getServer().broadcastMessage(response);

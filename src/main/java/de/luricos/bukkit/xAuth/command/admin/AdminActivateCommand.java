@@ -22,7 +22,6 @@ package de.luricos.bukkit.xAuth.command.admin;
 import de.luricos.bukkit.xAuth.command.xAuthAdminCommand;
 import de.luricos.bukkit.xAuth.event.command.admin.xAuthCommandAdminActivateEvent;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
-import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -32,60 +31,64 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminActivateCommand extends xAuthAdminCommand {
 
-    public AdminActivateCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.activate"))) {
-            this.setResult(true);
-            return;
+    public AdminActivateCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.activate";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length < 2) {
             this.getMessageHandler().sendMessage("admin.activate.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
         boolean force = ((args.length > 2) && (args[2].equals("force")));
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         xAuthEventProperties properties = new xAuthEventProperties();
         properties.setProperty("issuedby", sender.getName());
         if (targetName.equals("*")) {
-            Integer countState = xAuth.getPlugin().getPlayerManager().countLocked();
-            boolean success = xAuth.getPlugin().getPlayerManager().setAllActiveStates(true, null);
+            Integer countState = this.getPlayerManager().countLocked();
+            boolean success = this.getPlayerManager().setAllActiveStates(true, null);
 
             this.getMessageHandler().sendMessage(success ? "admin.activate.successM" : "admin.activate.error.generalM", sender, countState.toString());
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminActivateEvent.Action.ACTIVATED_ALL);
             properties.setProperty("targetname", "*");
             this.callEvent(new xAuthCommandAdminActivateEvent(properties));
-            return;
+            return true;
         }
 
         if (!xp.isRegistered()) {
             this.getMessageHandler().sendMessage("admin.activate.error.registered", sender, targetName);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminActivateEvent.Action.ACVTIVATION_ERROR_REGISTERED);
             properties.setProperty("targetid", xp.getAccountId());
             properties.setProperty("targetname", xp.getName());
             this.callEvent(new xAuthCommandAdminActivateEvent(properties));
 
-            return;
-        } else if ((!force) && (xAuth.getPlugin().getPlayerManager().isActive(xp.getAccountId()))) {
+            return true;
+        } else if ((!force) && (this.getPlayerManager().isActive(xp.getAccountId()))) {
             this.getMessageHandler().sendMessage("admin.activate.error.active", sender, targetName);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminActivateEvent.Action.ACTIVATION_ERROR_ACTIVE);
             properties.setProperty("target", xp.getAccountId());
             properties.setProperty("targetname", xp.getName());
             this.callEvent(new xAuthCommandAdminActivateEvent(properties));
 
-            return;
+            return true;
         }
 
-        boolean success = xAuth.getPlugin().getPlayerManager().activateAcc(xp.getAccountId());
+        boolean success = this.getPlayerManager().activateAcc(xp.getAccountId());
         if (!success) {
             this.getMessageHandler().sendMessage("admin.activate.error.general", sender, targetName);
 
@@ -101,7 +104,7 @@ public class AdminActivateCommand extends xAuthAdminCommand {
         }
         this.callEvent(new xAuthCommandAdminActivateEvent(properties));
 
-        this.setResult(true);
+        return true;
     }
 
 }

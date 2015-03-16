@@ -232,7 +232,7 @@ public class AuthMethodSQL extends AuthMethod {
 
     private boolean isWithinAccLimit(String ipaddress) {
         int limit = plugin.getConfig().getInt("registration.account-limit");
-        if (limit < 1 || (new CustomPlayerPermissionHandler(player.getPlayer(), PermissionType.BYPASS_ACCOUNT_LIMIT)).hasPermission())
+        if (limit < 1 || (new CustomPlayerPermissionHandler(player.getPlayer(), PermissionType.SECURITY_BYPASS_ACCOUNT_LIMIT)).hasPermission())
             return true;
 
         int count = 0;

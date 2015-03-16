@@ -44,7 +44,7 @@ public class RegisterCommand extends xAuthPlayerCommand implements CommandExecut
             return true;
 
         Player player = (Player) sender;
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(player);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(player);
 
         if ((xAuth.getPlugin().getConfig().getBoolean("registration.require-email") && args.length < 2) || args.length < 1) {
             this.getMessageHandler().sendMessage("register.usage", xp.getPlayer());
@@ -64,7 +64,7 @@ public class RegisterCommand extends xAuthPlayerCommand implements CommandExecut
 
         if (success) {
             if (!xAuth.getPlugin().getConfig().getBoolean("registration.require-login"))
-                xAuth.getPlugin().getPlayerManager().doLogin(xp);
+                this.getPlayerManager().doLogin(xp);
 
             // set registered user to target group
             boolean autoAssignGroup = xAuth.getPlugin().getConfig().getBoolean("groups.auto-assign", false);

@@ -33,20 +33,27 @@ import org.bukkit.entity.Player;
  */
 public class AdminLogoutCommand extends xAuthAdminCommand {
 
-    public AdminLogoutCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.logout"))) {
-            this.setResult(true);
-            return;
+    public AdminLogoutCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.logout";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length < 2) {
             this.getMessageHandler().sendMessage("admin.logout.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         xAuthEventProperties properties = new xAuthEventProperties();
         properties.setProperty("issuedby", sender.getName());
@@ -55,28 +62,27 @@ public class AdminLogoutCommand extends xAuthAdminCommand {
 
         if (!xp.isAuthenticated()) {
             this.getMessageHandler().sendMessage("admin.logout.error.logged", sender, targetName);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminLogoutEvent.Action.ERROR_LOGOUT_AUTHENTICATED);
             this.callEvent(new xAuthCommandAdminLogoutEvent(properties));
-            return;
+            return true;
         }
 
-        boolean success = xAuth.getPlugin().getPlayerManager().deleteSession(xp.getAccountId());
+        boolean success = this.getPlayerManager().deleteSession(xp.getAccountId());
         if (success) {
             xp.setStatus(xAuthPlayer.Status.REGISTERED);
 
             // a forced logout will set resetMode to false as the user does not had any chance to reset his password
             if (xp.isReset()) {
                 xp.setReset(false);
-                xAuth.getPlugin().getPlayerManager().unSetReset(xp.getAccountId());
+                this.getPlayerManager().unSetReset(xp.getAccountId());
             }
 
 
             // if player is logged in log him out
             Player targetPlayer = xp.getPlayer();
             if (targetPlayer != null) {
-                xAuth.getPlugin().getPlayerManager().protect(xp);
+                this.getPlayerManager().protect(xp);
                 this.getMessageHandler().sendMessage("admin.logout.success.target", targetPlayer);
             }
 
@@ -91,7 +97,7 @@ public class AdminLogoutCommand extends xAuthAdminCommand {
         }
 
         this.callEvent(new xAuthCommandAdminLogoutEvent(properties));
-        this.setResult(true);
+        return true;
     }
 
 }

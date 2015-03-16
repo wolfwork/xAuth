@@ -31,7 +31,7 @@ public class GuestPlayerPermissionNode extends PlayerPermissionNode {
     }
 
     @Override
-    public String getPermissionNode(Object[] arguments) {
+    public String getPermission(Object[] arguments) {
         return this.assemblePermission(getPermissionNode(), this.filterGuestPermissionObj(arguments));
     }
 

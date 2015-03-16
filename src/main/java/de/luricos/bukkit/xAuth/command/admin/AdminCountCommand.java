@@ -23,7 +23,6 @@ import de.luricos.bukkit.xAuth.command.xAuthAdminCommand;
 import de.luricos.bukkit.xAuth.command.xAuthPlayerCountType;
 import de.luricos.bukkit.xAuth.event.command.admin.xAuthCommandAdminCountEvent;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
-import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -32,16 +31,18 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminCountCommand extends xAuthAdminCommand {
 
-    public AdminCountCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminCountCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.count"))) {
-            this.setResult(true);
-            return;
+            return true;
         }
 
         if (args.length < 2) {
             this.getMessageHandler().sendMessage("admin.count.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         Integer count = 0;
@@ -50,8 +51,7 @@ public class AdminCountCommand extends xAuthAdminCommand {
         xAuthPlayerCountType playerCountType = xAuthPlayerCountType.getType(modeName);
         if (playerCountType == null) {
             this.getMessageHandler().sendMessage("admin.count.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         xAuthEventProperties properties = new xAuthEventProperties();
@@ -59,23 +59,23 @@ public class AdminCountCommand extends xAuthAdminCommand {
 
         switch(playerCountType) {
             case ALL:
-                count = xAuth.getPlugin().getPlayerManager().countAll();
+                count = this.getPlayerManager().countAll();
                 this.getMessageHandler().sendMessage("admin.count.success.all", sender, count.toString());
                 break;
             case ACTIVE:
-                count = xAuth.getPlugin().getPlayerManager().countActive();
+                count = this.getPlayerManager().countActive();
                 this.getMessageHandler().sendMessage("admin.count.success.active", sender, count.toString());
                 break;
             case LOCKED:
-                count = xAuth.getPlugin().getPlayerManager().countLocked();
+                count = this.getPlayerManager().countLocked();
                 this.getMessageHandler().sendMessage("admin.count.success.locked", sender, count.toString());
                 break;
             case PREMIUM:
-                count = xAuth.getPlugin().getPlayerManager().countPremium();
+                count = this.getPlayerManager().countPremium();
                 this.getMessageHandler().sendMessage("admin.count.success.premium", sender, count.toString());
                 break;
             case NON_PREMIUM:
-                count = xAuth.getPlugin().getPlayerManager().countNonPremium();
+                count = this.getPlayerManager().countNonPremium();
                 this.getMessageHandler().sendMessage("admin.count.success.non-premium", sender, count.toString());
                 break;
             default:
@@ -88,7 +88,7 @@ public class AdminCountCommand extends xAuthAdminCommand {
         properties.setProperty("count", count);
         this.callEvent(new xAuthCommandAdminCountEvent(properties));
 
-        this.setResult(true);
+        return true;
     }
 
 }

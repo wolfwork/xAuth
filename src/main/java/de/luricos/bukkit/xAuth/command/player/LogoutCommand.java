@@ -42,13 +42,13 @@ public class LogoutCommand extends xAuthPlayerCommand implements CommandExecutor
             return true;
 
         Player player = (Player) sender;
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(player);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(player);
         String response;
 
         if (xp.isAuthenticated()) {
-            boolean success = xAuth.getPlugin().getPlayerManager().deleteSession(xp.getAccountId());
+            boolean success = this.getPlayerManager().deleteSession(xp.getAccountId());
             if (success) {
-                xAuth.getPlugin().getPlayerManager().protect(xp);
+                this.getPlayerManager().protect(xp);
                 xp.setStatus(xAuthPlayer.Status.REGISTERED);
                 xAuth.getPlugin().getAuthClass(xp).offline(xp.getName());
                 response = "logout.success";

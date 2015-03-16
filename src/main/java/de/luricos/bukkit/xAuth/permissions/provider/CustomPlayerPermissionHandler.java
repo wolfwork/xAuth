@@ -30,19 +30,31 @@ public class CustomPlayerPermissionHandler extends AbstractPlayerPermissionHandl
     private String subSection = "internals";
 
     public CustomPlayerPermissionHandler(Player player, PermissionType permissionType) {
-        this(player, permissionType.getPermissionNode());
+        this(player, permissionType.getPermissionNode(), null);
     }
 
     public CustomPlayerPermissionHandler(Player player, String permission) {
+        this(player, permission, null);
+    }
+
+    public CustomPlayerPermissionHandler(Player player, PermissionType permissionType, String target) {
+        this(player, permissionType.getPermissionNode(), target);
+    }
+
+    public CustomPlayerPermissionHandler(Player player, String permission, String target) {
         this.xauthPlayer = getPlayerManager().getPlayer(player.getName());
-        this.obj = obj;
         this.playerStatus = this.xauthPlayer.getStatus();
 
         if (this.isAuthenticated()) {
             this.primaryNode = PermissionProviderPrimaryNode.XAUTH;
-            this.permissionString = String.format("%s.%s", this.getPrimaryNode().getName(), permission);
-            this.subSection = this.buildSubSection();
         }
+
+        String permissionFormat = "%s.%s";
+        if (target != null)
+            permissionFormat = "%s.%s.%s";
+
+        this.permissionString = String.format(permissionFormat, this.getPrimaryNode().getName(), permission, target);
+        this.subSection = this.buildSubSection();
     }
 
     public String buildSubSection() {
@@ -53,29 +65,18 @@ public class CustomPlayerPermissionHandler extends AbstractPlayerPermissionHandl
         return this.subSection;
     }
 
+    @Override
     public boolean hasPermission() {
         boolean result = ((this.isAuthenticated()) ? this.hasAuthenticateAccess() : this.hasGuestAccess());
-        this.sendDelayedDebugMessage(String.format("[HQ %s %s ] Node: '%s',  result: %s",
+        this.sendDelayedDebugMessage(String.format("[HQ %s %s] Node: '%s',  result: %s",
                 this.getPrimaryNode().getPrettyName(), this.getSubSection(), this.getPermissionString(), result
         ));
 
         return result;
     }
 
-    /**
-     * Guest has restrictions enabled
-     *
-     * @return boolean true if guest node is allowed
-     */
-    private boolean hasGuestAccess() {
-        return this.getGuestConfigurationNode();
-    }
-
-    private boolean getGuestConfigurationNode() {
-        return this.getConfig().getBoolean(this.getGuestConfigurationString(), this.guestAccessDefault);
-    }
-
-    public String getGuestConfigurationString() {
+    @Override
+    protected String getGuestConfigurationString() {
         return String.format("%s.%s", this.getPrimaryNode().getName(), this.getPermissionString());
     }
 
@@ -86,7 +87,7 @@ public class CustomPlayerPermissionHandler extends AbstractPlayerPermissionHandl
      * @return boolean true if the player has access to that node
      *                 false if not found (no permission set) or denied via permissions
      */
-    private boolean hasAuthenticateAccess() {
+    protected boolean hasAuthenticateAccess() {
         // check if the user is allowed to do so else check for denied flag if nothing found allow actions, restrict = false
         return getPermissionManager().has(getPlayer(), this.getPermissionString());
     }

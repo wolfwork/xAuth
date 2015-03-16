@@ -22,7 +22,6 @@ package de.luricos.bukkit.xAuth.command.admin;
 import de.luricos.bukkit.xAuth.command.xAuthAdminCommand;
 import de.luricos.bukkit.xAuth.event.command.admin.xAuthCommandAdminProfileEvent;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
-import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -36,32 +35,37 @@ import java.text.SimpleDateFormat;
  */
 public class AdminProfileCommand extends xAuthAdminCommand {
 
-    public AdminProfileCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.profile"))) {
-            this.setResult(true);
-            return;
+    public AdminProfileCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if ((!(sender instanceof Player)) && (args.length < 2)) {
+            this.getMessageHandler().sendMessage("admin.profile.error.console", sender);
+            return true;
+        }
+
+        String commandNode = "xauth.profile";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length > 2) {
             this.getMessageHandler().sendMessage("admin.profile.usage", sender);
-            this.setResult(true);
-            return;
-        }
-
-        if ((!(sender instanceof Player)) && (args.length < 2)) {
-            this.getMessageHandler().sendMessage("admin.profile.error.console", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = (args.length > 1) ? args[1] : sender.getName();
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
 
         xAuthPlayer xp;
         try {
             Integer accountId = Integer.parseInt(targetName);
-            xp = xAuth.getPlugin().getPlayerManager().getPlayerById(accountId);
+            xp = this.getPlayerManager().getPlayerById(accountId);
         } catch (Exception e) {
-            xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+            xp = this.getPlayerManager().getPlayer(targetName);
         }
 
         StringBuilder sb = new StringBuilder("------ xAuth Profile ------").append("\n");
@@ -109,7 +113,7 @@ public class AdminProfileCommand extends xAuthAdminCommand {
         this.callEvent(new xAuthCommandAdminProfileEvent(properties));
 
         sender.sendMessage(message);
-        this.setResult(true);
+        return true;
     }
 
 }

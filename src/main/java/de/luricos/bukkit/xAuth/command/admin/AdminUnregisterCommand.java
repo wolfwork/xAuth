@@ -33,20 +33,27 @@ import org.bukkit.entity.Player;
  */
 public class AdminUnregisterCommand extends xAuthAdminCommand {
 
-    public AdminUnregisterCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.unregister"))) {
-            this.setResult(true);
-            return;
+    public AdminUnregisterCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.unregister";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length < 2) {
             this.getMessageHandler().sendMessage("admin.unregister.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         xAuthEventProperties properties = new xAuthEventProperties();
         properties.setProperty("issuedby", sender.getName());
@@ -56,14 +63,13 @@ public class AdminUnregisterCommand extends xAuthAdminCommand {
 
         if (!xp.isRegistered()) {
             this.getMessageHandler().sendMessage("admin.unregister.error.registered", sender, targetName);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminUnregisterEvent.Action.ERROR_REGISTERED);
             this.callEvent(new xAuthCommandAdminUnregisterEvent(properties));
-            return;
+            return true;
         }
 
-        boolean success = xAuth.getPlugin().getPlayerManager().deleteAccount(xp.getAccountId());
+        boolean success = this.getPlayerManager().deleteAccount(xp.getAccountId());
         if (success) {
             xp.setStatus(xAuthPlayer.Status.GUEST);
             xAuth.getPlugin().getAuthClass(xp).offline(xp.getName());
@@ -71,11 +77,11 @@ public class AdminUnregisterCommand extends xAuthAdminCommand {
 
             Player target = xp.getPlayer();
             if (target != null) {
-                xAuth.getPlugin().getPlayerManager().protect(xp);
+                this.getPlayerManager().protect(xp);
                 this.getMessageHandler().sendMessage("admin.unregister.success.target", target);
             }
 
-            xAuth.getPlugin().getPlayerManager().initAccount(xp.getAccountId());
+            this.getPlayerManager().initAccount(xp.getAccountId());
 
             properties.setProperty("action", xAuthCommandAdminUnregisterEvent.Action.SUCCESS_UNREGISTER);
         } else {
@@ -84,7 +90,7 @@ public class AdminUnregisterCommand extends xAuthAdminCommand {
         }
 
         this.callEvent(new xAuthCommandAdminUnregisterEvent(properties));
-        this.setResult(true);
+        return true;
     }
 
 }

@@ -237,27 +237,37 @@ public class xAuthPlayerListener extends xAuthEventListener {
         }
 
         Player player = event.getPlayer();
-        PlayerPermissionHandler permissionHandler = new PlayerPermissionHandler(player, event.getEventName(), commands);
+        String playerName = player.getName();
 
-        xAuthPlayer xp = playerManager.getPlayer(player.getName());
+        xAuthPlayer xp = playerManager.getPlayer(playerName);
 
         xAuthEventProperties properties = new xAuthEventProperties();
-        properties.setProperty("playername", player.getName());
+        properties.setProperty("playername", playerName);
         properties.setProperty("status", xp.getStatus());
         properties.setProperty("command", command);
         if (this.isAllowedCommand(player, commands)) {
             properties.setProperty("action", xAuthPlayerExecuteCommandEvent.Action.COMMAND_ALLOWED);
+            this.callEvent(new xAuthPlayerExecuteCommandEvent(properties));
         } else {
-            this.sendCommandRestrictedMessage(xp, event, permissionHandler, commands);
-            properties.setProperty("action", xAuthPlayerExecuteCommandEvent.Action.COMMAND_DENIED);
+            this.sendCommandRestrictedMessage(xp, event, (new PlayerPermissionHandler(player, event.getEventName(), commands)), commands);
         }
-        this.callEvent(new xAuthPlayerExecuteCommandEvent(properties));
+    }
+
+    private boolean isAllowedCommand(final Player player, final String... command) {
+        return new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).checkPermission();
     }
 
     private void sendCommandRestrictedMessage(final xAuthPlayer xp, final PlayerCommandPreprocessEvent event, final PlayerPermissionHandler permissionHandler, String[] commands) {
         playerManager.sendNotice(xp, permissionHandler.getPermissionNode().getAction() + '.' + commands[0]);
         event.setMessage("/");
         event.setCancelled(true);
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("playername", xp.getName());
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("command", commands[0]);
+        properties.setProperty("action", xAuthPlayerExecuteCommandEvent.Action.COMMAND_DENIED);
+        this.callEvent(new xAuthPlayerExecuteCommandEvent(properties));
     }
 
 

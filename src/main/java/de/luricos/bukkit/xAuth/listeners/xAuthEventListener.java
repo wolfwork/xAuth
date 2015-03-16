@@ -35,6 +35,10 @@ public class xAuthEventListener implements Listener {
         this.playerManager = xAuth.getPlugin().getPlayerManager();
     }
 
+    protected PlayerManager getPlayerManager() {
+        return this.playerManager;
+    }
+
     protected void callEvent(final xAuthEvent event) {
         Bukkit.getPluginManager().callEvent(event);
     }
@@ -42,9 +46,4 @@ public class xAuthEventListener implements Listener {
     protected boolean isAllowed(final Player player, final Event event, final Object... obj) {
         return new PlayerPermissionHandler(player, event.getEventName(), obj).hasPermission();
     }
-
-    protected boolean isAllowedCommand(final Player player, final String... command) {
-        return new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
-    }
-
 }

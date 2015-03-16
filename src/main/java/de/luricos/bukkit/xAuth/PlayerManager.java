@@ -38,7 +38,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import java.sql.*;
@@ -905,12 +904,8 @@ public class PlayerManager {
         Bukkit.getPluginManager().callEvent(event);
     }
 
-    protected boolean isAllowed(final Player player, final Event event, final Object... obj) {
-        return new PlayerPermissionHandler(player, event.getEventName(), obj).hasPermission();
-    }
-
     protected boolean isAllowedCommand(final Player player, final String messageNode, final String... command) {
-        boolean allowed = new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
+        boolean allowed = new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).checkPermission();
         if (!allowed)
             xAuth.getPlugin().getMessageHandler().sendMessage(messageNode, player);
 

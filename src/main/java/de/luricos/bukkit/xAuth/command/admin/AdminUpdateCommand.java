@@ -33,10 +33,13 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminUpdateCommand extends xAuthAdminCommand {
 
-    public AdminUpdateCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminUpdateCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.update"))) {
-            this.setResult(true);
-            return;
+            return true;
         }
 
         xAuthEventProperties properties = new xAuthEventProperties();
@@ -61,7 +64,7 @@ public class AdminUpdateCommand extends xAuthAdminCommand {
         }
 
         xAuthLog.info("Update check finished. Message was: " + updater.getResultMessages());
-        this.setResult(true);
+        return true;
     }
 
 }

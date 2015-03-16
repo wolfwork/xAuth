@@ -100,11 +100,48 @@ public abstract class AbstractPlayerPermissionHandler extends PlayerPermissionPr
     }
 
     /**
-     * Use this to check to check permissions depending on the players status
+     * Use this to check to check permissions depending on the players status.
+     * Outputs debug messge
      *
      * @return boolean true if not restricted false otherwise
      */
     public abstract boolean hasPermission();
+
+    /**
+     * Checks permission silently
+     *
+     * @return boolean true if permission exists.
+     */
+    public boolean checkPermission() {
+        return ((this.isAuthenticated()) ? this.hasAuthenticateAccess() : this.hasGuestAccess());
+    }
+
+    /**
+     * Guest has restrictions enabled
+     *
+     * @return boolean true if guest node is allowed
+     */
+    protected boolean hasGuestAccess() {
+        return this.getGuestConfigurationNode();
+    }
+
+    protected boolean getGuestConfigurationNode() {
+        return this.getConfig().getBoolean(this.getGuestConfigurationString(), this.guestAccessDefault);
+    }
+
+    protected abstract String getGuestConfigurationString();
+
+    /**
+     * Player is restricted via permissions
+     * Note: This system does not depend on guest permission node configuration
+     *
+     * @return boolean true if the player has access to that node
+     *                 false if not found (no permission set) or denied via permissions
+     */
+    protected boolean hasAuthenticateAccess() {
+        // check if the user is allowed to do so else check for denied flag if nothing found allow actions, restrict = false
+        return this.getPermissionManager().has(getPlayer(), this.getPermissionString());
+    }
 
     protected void sendDelayedDebugMessage(final String msg) {
         if (!this.isDebug())

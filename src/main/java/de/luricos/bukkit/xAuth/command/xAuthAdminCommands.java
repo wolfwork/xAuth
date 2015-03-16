@@ -38,28 +38,28 @@ public class xAuthAdminCommands extends xAuthAdminCommand implements CommandExec
     public xAuthAdminCommands() {
     }
 
-    public Class<? extends xAuthAdminCommand> getCommandClass(String alias) throws ClassNotFoundException {
-        if (!COMMANDS_CACHE.containsKey(alias)) {
-            xAuthLog.debug("Class '" + alias + "' not found in cache ... loading");
+    public Class<? extends xAuthAdminCommand> getCommandClass(String commandClassName) throws ClassNotFoundException {
+        if (!COMMANDS_CACHE.containsKey(commandClassName)) {
+            xAuthLog.debug("Class '" + commandClassName + "' not found in cache ... loading");
 
-            Class<?> clazz = Class.forName(String.format("%s.admin.%s", this.getClass().getPackage().getName(), alias));
+            Class<?> clazz = Class.forName(String.format("%s.admin.%s", this.getClass().getPackage().getName(), commandClassName));
             if (!xAuthAdminCommand.class.isAssignableFrom(clazz)) {
-                throw new IllegalArgumentException("Class " + alias + " is not a subclass of xAuthAdminCommand.");
+                throw new IllegalArgumentException("Class " + commandClassName + " is not a subclass of xAuthAdminCommand.");
             }
 
-            COMMANDS_CACHE.put(alias, clazz.asSubclass(xAuthAdminCommand.class));
+            COMMANDS_CACHE.put(commandClassName, clazz.asSubclass(xAuthAdminCommand.class));
             return clazz.asSubclass(xAuthAdminCommand.class);
         }
 
-        xAuthLog.debug("Class '" + alias + "' fetched from cache.");
-        return COMMANDS_CACHE.get(alias);
+        xAuthLog.debug("Class '" + commandClassName + "' fetched from cache.");
+        return COMMANDS_CACHE.get(commandClassName);
     }
 
-    public xAuthAdminCommand getCommandClass(String commandClassName, CommandSender sender, Command command, String label, String[] args) throws xAuthException {
+    public xAuthAdminCommand getCommandClass(String commandClassName, Command command) throws xAuthException {
         try {
             Class<? extends xAuthAdminCommand> commandClass = getCommandClass(commandClassName);
-            Constructor<? extends xAuthAdminCommand> constructor = commandClass.getConstructor(CommandSender.class, Command.class, String.class, String[].class);
-            return constructor.newInstance(sender, command, label, args);
+            Constructor<? extends xAuthAdminCommand> constructor = commandClass.getConstructor();
+            return constructor.newInstance();
         } catch (ClassNotFoundException e) {
             return null;
         } catch (Throwable e) {
@@ -109,7 +109,7 @@ public class xAuthAdminCommands extends xAuthAdminCommand implements CommandExec
      * @return String the first letter capitalized
      */
     private String capitalizeFirst(String str) {
-        return (Character.toUpperCase(str.charAt(0)) + str.substring(1));
+        return (Character.toUpperCase(str.charAt(0)) + str.substring(1).toLowerCase());
     }
 
 
@@ -122,19 +122,17 @@ public class xAuthAdminCommands extends xAuthAdminCommand implements CommandExec
             return false;
 
         args = CommandLineTokenizer.tokenize(args);
-        String subCommand = args[0];
-        String aliasCommand = this.getAliasCommand(subCommand);
+        String subCommand = this.getAliasCommand(args[0]);
 
-        String commandClassName = "Admin" + this.capitalizeFirst(aliasCommand) + "Command";
-        xAuthAdminCommand commandClass = getCommandClass(commandClassName, sender, command, label, args);
+        String commandClassName = "Admin" + this.capitalizeFirst(subCommand) + "Command";
+        xAuthAdminCommand commandClass = getCommandClass(commandClassName, command);
 
         boolean result = commandClass != null;
-
         if (result) {
-            return commandClass.getResult();
+            return commandClass.onCommand(sender, command, label, args);
         }
 
-        this.getMessageHandler().sendMessage("misc.invalid-command", sender, aliasCommand);
+        this.getMessageHandler().sendMessage("misc.invalid-command", sender, subCommand);
         return true;
     }
 

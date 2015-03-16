@@ -45,7 +45,7 @@ public class ChangePwdCommand extends xAuthPlayerCommand implements CommandExecu
             return true;
 
         Player player = (Player) sender;
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(player);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(player);
 
         if (xp.isGuest()) {
             this.getMessageHandler().sendMessage("changepw.error.logged", xp.getPlayer());

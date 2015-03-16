@@ -31,10 +31,13 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminReloadCommand extends xAuthAdminCommand {
 
-    public AdminReloadCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminReloadCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.reload"))) {
-            this.setResult(true);
-            return;
+            return true;
         }
 
         xAuthEventProperties properties = new xAuthEventProperties();
@@ -45,7 +48,7 @@ public class AdminReloadCommand extends xAuthAdminCommand {
         xAuth.getPlugin().reload();
 
         this.getMessageHandler().sendMessage("admin.reload", sender);
-        this.setResult(true);
+        return true;
     }
 
 }

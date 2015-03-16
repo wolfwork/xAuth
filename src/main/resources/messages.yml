@@ -1,4 +1,4 @@
-# xAuth v2.5.0 Language File
+# xAuth v2.6 Language File
 # THIS HEADER IS USED AS A SIGNATURE. PLEASE DO NOT REMOVE.
 join:
     register: '{RED}You are not registered.{NEWLINE}{RED}Please register using /register <password>.'
@@ -80,6 +80,7 @@ misc:
 
 admin:
     permission: '{RED}You do not have permission to use this command!'
+    target-permission: '{RED}You do not have permission to use ''{TARGET}'' as target!'
     debug: 'Debugging level set to %s'
     register:
         usage: '{RED}Correct Usage: /xauth register <player> <password> [email]'

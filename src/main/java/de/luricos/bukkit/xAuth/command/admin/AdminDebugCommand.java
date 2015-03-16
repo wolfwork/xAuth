@@ -33,16 +33,18 @@ import java.util.logging.Level;
  */
 public class AdminDebugCommand extends xAuthAdminCommand {
 
-    public AdminDebugCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminDebugCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.config"))) {
-            this.setResult(true);
-            return;
+            return true;
         }
 
         if (args.length == 1) {
             this.getMessageHandler().sendMessage(String.format(this.getMessageHandler().getNode("admin.debug"), xAuthLog.getLevel().toString()), sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         Level toLevel = Level.INFO;
@@ -58,7 +60,7 @@ public class AdminDebugCommand extends xAuthAdminCommand {
         }
 
         this.getMessageHandler().sendMessage(String.format(this.getMessageHandler().getNode("admin.debug"), toLevel.toString()), sender);
-        this.setResult(true);
+        return true;
     }
 
 }

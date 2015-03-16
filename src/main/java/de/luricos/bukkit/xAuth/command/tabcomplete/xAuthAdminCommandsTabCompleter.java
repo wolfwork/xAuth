@@ -60,23 +60,22 @@ public class xAuthAdminCommandsTabCompleter implements TabCompleter {
             return null;
         }
 
-        String subCommand = command.getName();
-
-        if (args.length == 1)
-            subCommand = command.getName();
-
-        if (args.length > 1)
-            subCommand = args[0];
+        StringBuilder sb = new StringBuilder(command.getName());
+        String subCommand = "";
+        if (args.length > 1) {
+            subCommand = this.capitalizeFirst(args[0]);
+            sb.append(".").append(subCommand);
+        }
+        String node = sb.toString().toLowerCase();
 
         String tabCompleterName = this.getTabCompleterName(subCommand);
         boolean isValidTabCompleter = this.validateTabCompleter(tabCompleterName, sender, command, alias, args);
         if (!(isValidTabCompleter))
             return new ArrayList<String>();
 
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth." + subCommand.toLowerCase())) {
+        if (!this.isAllowedCommand(sender, "admin.permission", node)) {
             return new ArrayList<String>();
         }
-
 
         xAuthCommandTabCompletion commandClass = getCompleterClass(tabCompleterName, sender, command, alias, args);
         return commandClass.tabComplete(sender, command, alias, args);
@@ -87,7 +86,7 @@ public class xAuthAdminCommandsTabCompleter implements TabCompleter {
     }
 
     public String getTabCompleterName(String command) {
-        return "Admin" + this.capitalizeFirst(command) + "CommandTabComplete";
+        return "Admin" + command + "CommandTabComplete";
     }
 
     public Class<? extends xAuthCommandTabCompletion> getCompleterClass(String tabCompleterName) throws ClassNotFoundException {
@@ -149,7 +148,7 @@ public class xAuthAdminCommandsTabCompleter implements TabCompleter {
      * @return String the first letter capitalized
      */
     private String capitalizeFirst(String str) {
-        return (Character.toUpperCase(str.charAt(0)) + str.substring(1));
+        return (Character.toUpperCase(str.charAt(0)) + str.substring(1).toLowerCase());
     }
 
 

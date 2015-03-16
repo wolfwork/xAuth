@@ -31,10 +31,13 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminVersionCommand extends xAuthAdminCommand {
 
-    public AdminVersionCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminVersionCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.version"))) {
-            this.setResult(true);
-            return;
+            return true;
         }
 
         xAuthEventProperties properties = new xAuthEventProperties();
@@ -44,7 +47,7 @@ public class AdminVersionCommand extends xAuthAdminCommand {
         this.callEvent(new xAuthCommandAdminVersionEvent(properties));
 
         this.getMessageHandler().sendMessage(String.format(this.getMessageHandler().getNode("version.current-version"), xAuth.getPlugin().getDescription().getVersion()), sender);
-        this.setResult(true);
+        return true;
     }
 
 }

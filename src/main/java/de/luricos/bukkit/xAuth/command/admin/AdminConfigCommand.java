@@ -33,16 +33,18 @@ import java.util.List;
  */
 public class AdminConfigCommand extends xAuthAdminCommand {
 
-    public AdminConfigCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminConfigCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.config"))) {
-            this.setResult(true);
-            return;
+            return true;
         }
 
         if (args.length < 2) {
             this.getMessageHandler().sendMessage("admin.config.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String node = args[1].toLowerCase();
@@ -54,20 +56,18 @@ public class AdminConfigCommand extends xAuthAdminCommand {
 
         if (xAuth.getPlugin().getConfig().getConfigurationSection(node) != null) {
             this.getMessageHandler().sendMessage("admin.config.error.is-section", sender);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminConfigEvent.Action.ERROR_IS_SECTION);
             this.callEvent(new xAuthCommandAdminConfigEvent(properties));
-            return;
+            return true;
         }
 
         if (configValue == null) {
             this.getMessageHandler().sendMessage("admin.config.error.exist", sender);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminConfigEvent.Action.ERROR_NODE_EXIST);
             this.callEvent(new xAuthCommandAdminConfigEvent(properties));
-            return;
+            return true;
         }
 
         boolean getVal = false;
@@ -110,18 +110,16 @@ public class AdminConfigCommand extends xAuthAdminCommand {
             }
         } catch (NumberFormatException e) {
             this.getMessageHandler().sendMessage("admin.config.error.int", sender);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminConfigEvent.Action.ERROR_NODE_INT);
             this.callEvent(new xAuthCommandAdminConfigEvent(properties));
-            return;
+            return true;
         } catch (IllegalArgumentException e) {
             this.getMessageHandler().sendMessage("admin.config.error.invalid", sender);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminConfigEvent.Action.ERROR_NODE_INVALID);
             this.callEvent(new xAuthCommandAdminConfigEvent(properties));
-            return;
+            return true;
         }
 
         if (!getVal) {
@@ -134,7 +132,7 @@ public class AdminConfigCommand extends xAuthAdminCommand {
         }
 
         this.callEvent(new xAuthCommandAdminConfigEvent(properties));
-        this.setResult(true);
+        return true;
     }
 
 }
