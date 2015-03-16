@@ -110,12 +110,13 @@ public class AuthMethodURL extends AuthMethod {
         return false;
     }
 
-    public boolean setResetPw(String user) {
+    public boolean clearResetpwFlag(String user) {
         response = "authurl.resetpw";
+
         return false;
     }
 
-    public boolean unSetResetPw(String user) {
+    public boolean setResetpwFlag(String user) {
         response = "authurl.resetpw";
         return false;
     }

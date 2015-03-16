@@ -74,8 +74,7 @@ public class AdminLogoutCommand extends xAuthAdminCommand {
 
             // a forced logout will set resetMode to false as the user does not had any chance to reset his password
             if (xp.isReset()) {
-                xp.setReset(false);
-                this.getPlayerManager().unSetReset(xp.getAccountId());
+                this.getPlayerManager().clearReset(xp.getAccountId());
             }
 
 

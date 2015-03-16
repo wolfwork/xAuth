@@ -79,8 +79,7 @@ public class AdminResetpwCommand extends xAuthAdminCommand {
             xAuthLog.info(sender.getName() + " reset " + targetName + "'s password");
             this.getMessageHandler().sendMessage("admin.resetpw.success.target", xp.getPlayer());
             this.getMessageHandler().sendMessage("resetpw.reset-usage", xp.getPlayer());
-            xp.setReset(true);
-
+            
             properties.setProperty("action", xAuthCommandAdminResetpwEvent.Action.SUCCESS_RESET);
         } else {
             properties.setProperty("action", xAuthCommandAdminResetpwEvent.Action.ERROR_GENERAL);

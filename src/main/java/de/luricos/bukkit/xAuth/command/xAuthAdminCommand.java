@@ -58,7 +58,7 @@ public abstract class xAuthAdminCommand extends xAuthCommand {
             return this.isDeniedCommandTarget((Player) sender, messageNode, target, command);
         }
 
-        return (sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender);
+        return (!((sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender)));
     }
 
     /**

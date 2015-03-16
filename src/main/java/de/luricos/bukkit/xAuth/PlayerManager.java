@@ -528,10 +528,23 @@ public class PlayerManager {
         }
     }
 
+    /**
+     * Activate account by id also clears reset flag so a user can login again
+     *
+     * @param id the account id
+     * @return true if the account got activated
+     */
     public boolean activateAcc(int id) {
+        this.clearReset(id);
         return this.setActiveState(id, true);
     }
 
+    /**
+     * Lock an activate account by id
+     *
+     * @param id the account id
+     * @return true if the account has been activated
+     */
     public boolean lockAcc(int id) {
         return this.setActiveState(id, false);
     }
@@ -562,13 +575,18 @@ public class PlayerManager {
         return this.setResetState(id, true);
     }
 
-    public boolean unSetReset(int id) {
+    public boolean clearReset(int id) {
         return this.setResetState(id, false);
     }
 
-    private boolean setResetState(int id, boolean reset) {
+    private boolean setResetState(int id, boolean state) {
         xAuthPlayer xp = this.getPlayerById(id);
-        return this.getAuthClass(xp).unSetResetPw(xp.getName());
+        boolean result = (!(state)) ? this.getAuthClass(xp).clearResetpwFlag(xp.getName()) : this.getAuthClass(xp).setResetpwFlag(xp.getName());
+
+        if (result)
+            xp.setReset(state);
+
+        return result;
     }
 
     public boolean activateAll() {
@@ -690,6 +708,7 @@ public class PlayerManager {
                 xp.setStatus(xAuthPlayer.Status.REGISTERED);
             }
 
+            // track last login
             if (plugin.getConfig().getBoolean("account.track-last-login"))
                 this.updateLastLogin(accountId, ipAddress, currentTime);
 
@@ -700,8 +719,9 @@ public class PlayerManager {
             // clear strikes
             this.plugin.getStrikeManager().getRecord(ipAddress).clearStrikes(xp.getName());
 
-            // clear reset flag
-            this.plugin.getPlayerManager().setResetState(accountId, false);
+            // clear reset flag since a player did not use /changepw when he got the flag
+            // the player will still be locked
+            this.clearReset(accountId);
 
             this.unprotect(xp);
             xp.setLoginTime(currentTime);

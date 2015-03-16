@@ -165,11 +165,11 @@ public class AuthMethodSQL extends AuthMethod {
         return execRpwQuery(user, pwType, 1, "admin.resetpw.success.command");
     }
 
-    public boolean unSetResetPw(String user) {
+    public boolean clearResetpwFlag(String user) {
         return execRpwQuery(user, player.getPasswordType().getTypeId(), 0, null);
     }
 
-    public boolean setResetPw(String user) {
+    public boolean setResetpwFlag(String user) {
         return execRpwQuery(user, player.getPasswordType().getTypeId(), 1, null);
     }
 
@@ -185,7 +185,8 @@ public class AuthMethodSQL extends AuthMethod {
             ps.setInt(2, resetPw);
             ps.setInt(3, player.getAccountId());
             ps.executeUpdate();
-            player.setReset(false);
+
+            player.setReset((resetPw > 0));
             this.response = response;
             return true;
         } catch (SQLException e) {
