@@ -63,7 +63,7 @@ public class RegisterCommand extends xAuthPlayerCommand implements CommandExecut
             this.getMessageHandler().sendMessage(response, xp.getPlayer());
 
         if (success) {
-            if (!xAuth.getPlugin().getConfig().getBoolean("registration.require-login"))
+            if ((!(xAuth.getPlugin().getConfig().getBoolean("registration.activation"))) && (!(xAuth.getPlugin().getConfig().getBoolean("registration.require-login"))))
                 this.getPlayerManager().doLogin(xp);
 
             // set registered user to target group
