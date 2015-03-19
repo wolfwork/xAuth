@@ -35,29 +35,32 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminResetpwCommand extends xAuthAdminCommand {
 
-    public AdminResetpwCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.resetpw")) {
-            this.setResult(true);
-            return;
+    public AdminResetpwCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.resetpw";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
-        if (args.length > 3) {
+        if ((args.length > 3) || (args.length < 2)) {
             this.getMessageHandler().sendMessage("admin.resetpw.usage", sender);
-            this.setResult(true);
-            return;
-        } else if (args.length < 2) {
-            this.getMessageHandler().sendMessage("admin.resetpw.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
         int pwType = PasswordType.DEFAULT.getTypeId();
         if (args.length > 2) {
             pwType = Integer.parseInt(args[2]);
         }
 
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         xAuthEventProperties properties = new xAuthEventProperties();
         properties.setProperty("issuedby", sender.getName());
@@ -76,15 +79,14 @@ public class AdminResetpwCommand extends xAuthAdminCommand {
             xAuthLog.info(sender.getName() + " reset " + targetName + "'s password");
             this.getMessageHandler().sendMessage("admin.resetpw.success.target", xp.getPlayer());
             this.getMessageHandler().sendMessage("resetpw.reset-usage", xp.getPlayer());
-            xp.setReset(true);
-
+            
             properties.setProperty("action", xAuthCommandAdminResetpwEvent.Action.SUCCESS_RESET);
         } else {
             properties.setProperty("action", xAuthCommandAdminResetpwEvent.Action.ERROR_GENERAL);
         }
 
         this.callEvent(new xAuthCommandAdminResetpwEvent(properties));
-        this.setResult(true);;
+        return true;
     }
 
 }

@@ -35,22 +35,29 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminRegisterCommand extends xAuthAdminCommand {
 
-    public AdminRegisterCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.register")) {
-            this.setResult(true);
-            return;
+    public AdminRegisterCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.register";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length < 3) {
             this.getMessageHandler().sendMessage("admin.register.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
         String password = args[2];
         String email = args.length > 3 ? args[3] : null;
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         AuthMethod a = xAuth.getPlugin().getAuthClass(xp);
         boolean success = a.adminRegister(targetName, password, email);
@@ -83,6 +90,6 @@ public class AdminRegisterCommand extends xAuthAdminCommand {
             this.callEvent(new xAuthCommandAdminRegisterEvent(properties));
         }
 
-        this.setResult(true);
+        return true;
     }
 }

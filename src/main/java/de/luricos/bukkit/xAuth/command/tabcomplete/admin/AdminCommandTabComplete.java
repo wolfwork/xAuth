@@ -31,11 +31,11 @@ import java.util.List;
 /**
  * @author lycano
  */
-public class AdminXauthCommandTabComplete extends xAuthCommandTabCompletion {
+public class AdminCommandTabComplete extends xAuthCommandTabCompletion {
 
     private List<String> commands = new ArrayList<String>();
 
-    public AdminXauthCommandTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public AdminCommandTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         super(sender, command, alias, args);
 
         this.commands = this.parseCommandUsage(command.getUsage());

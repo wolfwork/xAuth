@@ -1,5 +1,5 @@
 name: xAuth
-version: 2.5.1
+version: 2.6
 description: Advanced Authentication Plugin
 author: [CypherX, lycano]
 website: https://github.com/lycano/xAuth
@@ -85,7 +85,6 @@ permissions:
         xauth.allow.player.command.xauth.version: true
         xauth.allow.player.command.xauth.update: true
         xauth.allow.player.command.xauth.upgrade: true
-        xauth.allow.player.bypass.acclimit: true
   xauth.allow.player.command.xauth.register:
     description: Allows you to register other players
     default: op
@@ -137,6 +136,9 @@ permissions:
   xauth.allow.player.command.xauth.upgrade:
     description: Allows you to upgrade the plugin
     default: op
-  xauth.allow.player.bypass.acclimit:
+  xauth.security.player.use.admin.command:
+    description: Allows you to use admin command. Additional check for players who give xauth.allow.*
+    default: op
+  xauth.security.player.bypass.acclimit:
     description: Allows you to bypass the account limit and register an unlimited amount of accounts.
     default: op

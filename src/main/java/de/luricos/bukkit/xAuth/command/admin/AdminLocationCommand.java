@@ -34,23 +34,24 @@ import org.bukkit.entity.Player;
  */
 public class AdminLocationCommand extends xAuthAdminCommand {
 
-    public AdminLocationCommand(CommandSender sender, Command command, String label, String[] args) {
+    public AdminLocationCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof ConsoleCommandSender) {
             xAuthLog.info("This command cannot be executed from the console!");
-            this.setResult(true);
-            return;
+            return true;
         }
 
         Player player = (Player) sender;
-        if (!this.isAllowedCommand(player, "admin.permission", "xauth.location")) {
-            this.setResult(true);
-            return;
+        if (!(this.isAllowedCommand(player, "admin.permission", "xauth.location"))) {
+            return true;
         }
 
         if (args.length < 2 || !(args[1].equals("set") || args[1].equals("remove"))) {
             this.getMessageHandler().sendMessage("admin.location.usage", player);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String action = args[1];
@@ -62,11 +63,10 @@ public class AdminLocationCommand extends xAuthAdminCommand {
         if (action.equals("set")) {
             if (!global && player.getWorld().getUID().equals(xAuth.getPlugin().getLocationManager().getGlobalUID())) {
                 this.getMessageHandler().sendMessage("admin.location.set.error.global", player);
-                this.setResult(true);
 
                 properties.setProperty("action", xAuthCommandAdminLocationEvent.Action.ERROR_SET_GLOBAL);
                 this.callEvent(new xAuthCommandAdminLocationEvent(properties));
-                return;
+                return true;
             }
 
             boolean success = xAuth.getPlugin().getLocationManager().setLocation(player.getLocation(), global);
@@ -78,27 +78,24 @@ public class AdminLocationCommand extends xAuthAdminCommand {
             if (global) {
                 if (xAuth.getPlugin().getLocationManager().getGlobalUID() == null) {
                     this.getMessageHandler().sendMessage("admin.location.remove.error.noglobal", player);
-                    this.setResult(true);
 
                     properties.setProperty("action", xAuthCommandAdminLocationEvent.Action.ERROR_NO_GLOBAL);
                     this.callEvent(new xAuthCommandAdminLocationEvent(properties));
-                    return;
+                    return true;
                 }
             } else {
                 if (!xAuth.getPlugin().getLocationManager().isLocationSet(player.getWorld())) {
                     this.getMessageHandler().sendMessage("admin.location.remove.error.notset", player);
-                    this.setResult(true);
 
                     properties.setProperty("action", xAuthCommandAdminLocationEvent.Action.ERROR_NOT_SET);
                     this.callEvent(new xAuthCommandAdminLocationEvent(properties));
-                    return;
+                    return true;
                 } else if (player.getWorld().getUID().equals(xAuth.getPlugin().getLocationManager().getGlobalUID())) {
                     this.getMessageHandler().sendMessage("admin.location.remove.error.global", player);
-                    this.setResult(true);
 
                     properties.setProperty("action", xAuthCommandAdminLocationEvent.Action.ERROR_REMOVE_GLOBAL);
                     this.callEvent(new xAuthCommandAdminLocationEvent(properties));
-                    return;
+                    return true;
                 }
             }
 
@@ -120,6 +117,6 @@ public class AdminLocationCommand extends xAuthAdminCommand {
         this.getMessageHandler().sendMessage(response, player);
 
         this.callEvent(new xAuthCommandAdminLocationEvent(properties));
-        this.setResult(true);
+        return true;
     }
 }

@@ -20,6 +20,7 @@
 package de.luricos.bukkit.xAuth.command;
 
 import de.luricos.bukkit.xAuth.MessageHandler;
+import de.luricos.bukkit.xAuth.PlayerManager;
 import de.luricos.bukkit.xAuth.event.xAuthEvent;
 import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.Bukkit;
@@ -30,8 +31,16 @@ import org.bukkit.command.CommandSender;
  */
 public abstract class xAuthCommand {
 
+    protected PlayerManager playerManager = null;
+
+    public PlayerManager getPlayerManager() {
+        if (this.playerManager == null)
+            this.playerManager = xAuth.getPlugin().getPlayerManager();
+
+        return this.playerManager;
+    }
+
     private MessageHandler messageHandler = xAuth.getPlugin().getMessageHandler();
-    private boolean result = false;
 
     protected void callEvent(final xAuthEvent event) {
         Bukkit.getPluginManager().callEvent(event);

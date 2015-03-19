@@ -38,7 +38,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import java.sql.*;
@@ -529,10 +528,23 @@ public class PlayerManager {
         }
     }
 
+    /**
+     * Activate account by id also clears reset flag so a user can login again
+     *
+     * @param id the account id
+     * @return true if the account got activated
+     */
     public boolean activateAcc(int id) {
+        this.clearReset(id);
         return this.setActiveState(id, true);
     }
 
+    /**
+     * Lock an activate account by id
+     *
+     * @param id the account id
+     * @return true if the account has been activated
+     */
     public boolean lockAcc(int id) {
         return this.setActiveState(id, false);
     }
@@ -563,13 +575,18 @@ public class PlayerManager {
         return this.setResetState(id, true);
     }
 
-    public boolean unSetReset(int id) {
+    public boolean clearReset(int id) {
         return this.setResetState(id, false);
     }
 
-    private boolean setResetState(int id, boolean reset) {
+    private boolean setResetState(int id, boolean state) {
         xAuthPlayer xp = this.getPlayerById(id);
-        return this.getAuthClass(xp).unSetResetPw(xp.getName());
+        boolean result = (!(state)) ? this.getAuthClass(xp).clearResetpwFlag(xp.getName()) : this.getAuthClass(xp).setResetpwFlag(xp.getName());
+
+        if (result)
+            xp.setReset(state);
+
+        return result;
     }
 
     public boolean activateAll() {
@@ -691,6 +708,7 @@ public class PlayerManager {
                 xp.setStatus(xAuthPlayer.Status.REGISTERED);
             }
 
+            // track last login
             if (plugin.getConfig().getBoolean("account.track-last-login"))
                 this.updateLastLogin(accountId, ipAddress, currentTime);
 
@@ -701,8 +719,9 @@ public class PlayerManager {
             // clear strikes
             this.plugin.getStrikeManager().getRecord(ipAddress).clearStrikes(xp.getName());
 
-            // clear reset flag
-            this.plugin.getPlayerManager().setResetState(accountId, false);
+            // clear reset flag since a player did not use /changepw when he got the flag
+            // the player will still be locked
+            this.clearReset(accountId);
 
             this.unprotect(xp);
             xp.setLoginTime(currentTime);
@@ -831,8 +850,11 @@ public class PlayerManager {
             }
 
             // insert if session does not exist
-            sql = String.format("INSERT INTO `%s` VALUES (?, ?, ?)",
-                    this.getTable(DatabaseTables.SESSION));
+            sql = String.format("INSERT INTO `%s` (`%s`, `%s`, `%s`) VALUES (?, ?, ?)",
+                    this.getTable(DatabaseTables.SESSION),
+                    this.getRow(DatabaseRows.SESSION_ACCOUNTID),
+                    this.getRow(DatabaseRows.SESSION_IPADDRESS),
+                    this.getRow(DatabaseRows.SESSION_LOGINTIME));
 
             ps = conn.prepareStatement(sql);
             ps.setInt(1, accountId);
@@ -905,12 +927,8 @@ public class PlayerManager {
         Bukkit.getPluginManager().callEvent(event);
     }
 
-    protected boolean isAllowed(final Player player, final Event event, final Object... obj) {
-        return new PlayerPermissionHandler(player, event.getEventName(), obj).hasPermission();
-    }
-
     protected boolean isAllowedCommand(final Player player, final String messageNode, final String... command) {
-        boolean allowed = new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
+        boolean allowed = new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).checkPermission();
         if (!allowed)
             xAuth.getPlugin().getMessageHandler().sendMessage(messageNode, player);
 

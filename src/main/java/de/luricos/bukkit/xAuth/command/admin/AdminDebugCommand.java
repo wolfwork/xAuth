@@ -23,7 +23,6 @@ import de.luricos.bukkit.xAuth.command.xAuthAdminCommand;
 import de.luricos.bukkit.xAuth.event.command.admin.xAuthCommandAdminDebugEvent;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
-import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -34,22 +33,18 @@ import java.util.logging.Level;
  */
 public class AdminDebugCommand extends xAuthAdminCommand {
 
-    public AdminDebugCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.config")) {
-            this.setResult(true);
-            return;
-        }
+    public AdminDebugCommand() {
 
-        if (!xAuth.getPermissionManager().has(sender, "xauth.allow.player.command.xauth.config")) {
-            this.getMessageHandler().sendMessage("admin.permission", sender);
-            this.setResult(true);
-            return;
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(this.isAllowedCommand(sender, "admin.permission", "xauth.config"))) {
+            return true;
         }
 
         if (args.length == 1) {
             this.getMessageHandler().sendMessage(String.format(this.getMessageHandler().getNode("admin.debug"), xAuthLog.getLevel().toString()), sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         Level toLevel = Level.INFO;
@@ -65,7 +60,7 @@ public class AdminDebugCommand extends xAuthAdminCommand {
         }
 
         this.getMessageHandler().sendMessage(String.format(this.getMessageHandler().getNode("admin.debug"), toLevel.toString()), sender);
-        this.setResult(true);
+        return true;
     }
 
 }

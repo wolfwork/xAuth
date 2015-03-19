@@ -22,7 +22,6 @@ package de.luricos.bukkit.xAuth.command.admin;
 import de.luricos.bukkit.xAuth.command.xAuthAdminCommand;
 import de.luricos.bukkit.xAuth.event.command.admin.xAuthCommandAdminLockEvent;
 import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
-import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -33,34 +32,41 @@ import org.bukkit.entity.Player;
  */
 public class AdminLockCommand extends xAuthAdminCommand {
 
-    public AdminLockCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.lock")) {
-            this.setResult(true);
-            return;
+    public AdminLockCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.lock";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length < 2) {
             this.getMessageHandler().sendMessage("admin.lock.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
         boolean force = ((args.length > 2) && (args[2].equals("force")));
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         xAuthEventProperties properties = new xAuthEventProperties();
         properties.setProperty("issuedby", sender.getName());
 
         if (targetName.equals("*")) {
-            Integer countState = xAuth.getPlugin().getPlayerManager().countActive();
+            Integer countState = this.getPlayerManager().countActive();
             if (sender instanceof Player) {
-                xp = xAuth.getPlugin().getPlayerManager().getPlayer(sender.getName());
+                xp = this.getPlayerManager().getPlayer(sender.getName());
                 if (countState > 0)
                     countState--;
             }
 
-            boolean success = xAuth.getPlugin().getPlayerManager().setAllActiveStates(false, new Integer[]{xp.getAccountId()});
+            boolean success = this.getPlayerManager().setAllActiveStates(false, new Integer[]{xp.getAccountId()});
 
             String node;
             if (success) {
@@ -71,30 +77,27 @@ public class AdminLockCommand extends xAuthAdminCommand {
                 node = "admin.lock.error.generalM";
             }
             this.getMessageHandler().sendMessage(node, sender, countState.toString());
-            this.setResult(true);
 
             properties.setProperty("target", "*");
             this.callEvent(new xAuthCommandAdminLockEvent(properties));
-            return;
+            return true;
         }
 
         if (!xp.isRegistered()) {
             this.getMessageHandler().sendMessage("admin.lock.error.registered", sender);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminLockEvent.Action.ERROR_REGISTERED);
             this.callEvent(new xAuthCommandAdminLockEvent(properties));
-            return;
-        } else if ((!force) && (!xAuth.getPlugin().getPlayerManager().isActive(xp.getAccountId()))) {
+            return true;
+        } else if ((!force) && (!this.getPlayerManager().isActive(xp.getAccountId()))) {
             this.getMessageHandler().sendMessage("admin.lock.error.locked", sender);
-            this.setResult(true);
 
             properties.setProperty("action", xAuthCommandAdminLockEvent.Action.ERROR_LOCKED);
             this.callEvent(new xAuthCommandAdminLockEvent(properties));
-            return;
+            return true;
         }
 
-        boolean success = xAuth.getPlugin().getPlayerManager().lockAcc(xp.getAccountId());
+        boolean success = this.getPlayerManager().lockAcc(xp.getAccountId());
         String node;
         if (success) {
             properties.setProperty("action", xAuthCommandAdminLockEvent.Action.SUCCESS_LOCK_PLAYER);
@@ -111,7 +114,7 @@ public class AdminLockCommand extends xAuthAdminCommand {
         this.getMessageHandler().sendMessage(node, sender, targetName);
 
         this.callEvent(new xAuthCommandAdminLockEvent(properties));
-        this.setResult(true);
+        return true;
     }
 
 }

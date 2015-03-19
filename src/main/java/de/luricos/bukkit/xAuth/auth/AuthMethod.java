@@ -121,7 +121,7 @@ public abstract class AuthMethod {
      * @param user Username
      * @return success May be safely ignored
      */
-    public abstract boolean unSetResetPw(String user);
+    public abstract boolean clearResetpwFlag(String user);
 
     /**
      * Sets resetMode of user to 1 if supported.
@@ -129,7 +129,7 @@ public abstract class AuthMethod {
      * @param user Username
      * @return success May be safely ignored
      */
-    public abstract boolean setResetPw(String user);
+    public abstract boolean setResetpwFlag(String user);
 
     /**
      * Sets status of user to online if supported.  This is for use when a user doesn't need to supply

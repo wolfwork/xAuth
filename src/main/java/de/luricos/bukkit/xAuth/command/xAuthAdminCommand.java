@@ -19,8 +19,12 @@
  */
 package de.luricos.bukkit.xAuth.command;
 
+import de.luricos.bukkit.xAuth.exceptions.xAuthCommandException;
+import de.luricos.bukkit.xAuth.permissions.PermissionType;
+import de.luricos.bukkit.xAuth.permissions.provider.CustomPlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.permissions.provider.PlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.xAuth;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
@@ -31,7 +35,7 @@ import org.bukkit.entity.Player;
  */
 public abstract class xAuthAdminCommand extends xAuthCommand {
 
-    private boolean result = false;
+    public abstract boolean onCommand(CommandSender sender, Command command, String label, String[] args);
 
     protected boolean isAllowedCommand(final CommandSender sender, final String messageNode, final String... command) {
         if (sender instanceof Player) {
@@ -42,18 +46,47 @@ public abstract class xAuthAdminCommand extends xAuthCommand {
     }
 
     protected boolean isAllowedCommand(final Player player, final String messageNode, final String... command) {
-        boolean allowed = new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
+        boolean allowed = (((new CustomPlayerPermissionHandler(player, PermissionType.SECURITY_USE_ADMIN_COMMAND)).hasPermission()) && ((new PlayerPermissionHandler(player, "PlayerCommandPreProcessEvent", command)).hasPermission()));
         if (!allowed)
             xAuth.getPlugin().getMessageHandler().sendMessage(messageNode, player);
 
         return allowed;
     }
 
-    public void setResult(boolean result) {
-        this.result = result;
+    protected boolean isDeniedCommandTarget(final CommandSender sender, final String messageNode, final String target, final String... command) {
+        if (sender instanceof Player) {
+            return this.isDeniedCommandTarget((Player) sender, messageNode, target, command);
+        }
+
+        return (!((sender instanceof ConsoleCommandSender) || (sender instanceof RemoteConsoleCommandSender)));
     }
 
-    public boolean getResult() {
-        return this.result;
+    /**
+     * denied command target checks against SECURITY_DENY_ADMIN_COMMAND_TARGET_PREFIX
+     *
+     * @param player the player object
+     * @param messageNode the message node
+     * @param target the target to issue
+     * @param command the commands as string array. Null is not an acceptable argument!
+     *
+     * @return true if node is set via permission. False if node is not set
+     */
+    protected boolean isDeniedCommandTarget(final Player player, final String messageNode, final String target, final String... command) {
+        if (command.length == 0) {
+            throw new xAuthCommandException("Null is not a valid argument");
+        }
+
+        StringBuilder sb = new StringBuilder(command[0]);
+        for (String element: command) {
+            sb.append(".");
+            sb.append(element);
+        }
+        String targetNode = sb.toString() + "." + target.toLowerCase();
+
+        boolean denied = (new CustomPlayerPermissionHandler(player, PermissionType.SECURITY_DENY_ADMIN_COMMAND_TARGET_PREFIX, targetNode)).hasPermission();
+        if (denied)
+            xAuth.getPlugin().getMessageHandler().sendMessage(messageNode, player, target);
+
+        return denied;
     }
 }

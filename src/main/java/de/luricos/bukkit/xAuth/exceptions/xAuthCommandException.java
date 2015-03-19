@@ -17,31 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package de.luricos.bukkit.xAuth.permissions.provider;
-
-import org.bukkit.entity.Player;
+package de.luricos.bukkit.xAuth.exceptions;
 
 /**
+ *
  * @author lycano
  */
-public class GuestPlayerPermissionNode extends PlayerPermissionNode {
+@SuppressWarnings("serial")
+public class xAuthCommandException extends xAuthException {
+    private String message;
 
-    public GuestPlayerPermissionNode(final String message) {
-        super(message);
+    public xAuthCommandException(String message) {
+        this.message = message;
     }
 
     @Override
-    public String getPermission(Object[] arguments) {
-        return this.assemblePermission(getPermissionNode(), this.filterGuestPermissionObj(arguments));
-    }
-
-    private Object[] filterGuestPermissionObj(Object[] arguments) {
-        Object objectType = arguments[0];
-
-        if (objectType instanceof Player) {
-            return new Object[0];
-        }
-
-        return arguments;
+    public String getMessage() {
+        return this.message;
     }
 }

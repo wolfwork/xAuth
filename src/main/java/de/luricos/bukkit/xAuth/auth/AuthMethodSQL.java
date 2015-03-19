@@ -23,6 +23,8 @@ package de.luricos.bukkit.xAuth.auth;
 import com.avaje.ebean.validation.factory.EmailValidatorFactory;
 import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.password.PasswordType;
+import de.luricos.bukkit.xAuth.permissions.PermissionType;
+import de.luricos.bukkit.xAuth.permissions.provider.CustomPlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
@@ -163,11 +165,11 @@ public class AuthMethodSQL extends AuthMethod {
         return execRpwQuery(user, pwType, 1, "admin.resetpw.success.command");
     }
 
-    public boolean unSetResetPw(String user) {
+    public boolean clearResetpwFlag(String user) {
         return execRpwQuery(user, player.getPasswordType().getTypeId(), 0, null);
     }
 
-    public boolean setResetPw(String user) {
+    public boolean setResetpwFlag(String user) {
         return execRpwQuery(user, player.getPasswordType().getTypeId(), 1, null);
     }
 
@@ -183,7 +185,8 @@ public class AuthMethodSQL extends AuthMethod {
             ps.setInt(2, resetPw);
             ps.setInt(3, player.getAccountId());
             ps.executeUpdate();
-            player.setReset(false);
+
+            player.setReset((resetPw > 0));
             this.response = response;
             return true;
         } catch (SQLException e) {
@@ -230,7 +233,7 @@ public class AuthMethodSQL extends AuthMethod {
 
     private boolean isWithinAccLimit(String ipaddress) {
         int limit = plugin.getConfig().getInt("registration.account-limit");
-        if (limit < 1 || xAuth.getPermissionManager().has(player.getPlayer(), "xauth.allow.player.account.bypass.limit"))
+        if (limit < 1 || (new CustomPlayerPermissionHandler(player.getPlayer(), PermissionType.SECURITY_BYPASS_ACCOUNT_LIMIT)).hasPermission())
             return true;
 
         int count = 0;

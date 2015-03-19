@@ -304,6 +304,7 @@ public class xAuth extends JavaPlugin {
         return strikeManager;
     }
 
+    // @TODO implement factory
     public AuthMethod getAuthClass(xAuthPlayer p) {
         if (isAuthURL())
             return new AuthMethodURL(this, p.getIPAddress());

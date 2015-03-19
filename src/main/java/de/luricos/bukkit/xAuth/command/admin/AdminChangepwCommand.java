@@ -34,21 +34,28 @@ import org.bukkit.command.CommandSender;
  */
 public class AdminChangepwCommand extends xAuthAdminCommand {
 
-    public AdminChangepwCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!this.isAllowedCommand(sender, "admin.permission", "xauth.changepw")) {
-            this.setResult(true);
-            return;
+    public AdminChangepwCommand() {
+
+    }
+
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandNode = "xauth.changepw";
+        if (!(this.isAllowedCommand(sender, "admin.permission", commandNode))) {
+            return true;
         }
 
         if (args.length < 3) {
             this.getMessageHandler().sendMessage("admin.changepw.usage", sender);
-            this.setResult(true);
-            return;
+            return true;
         }
 
         String targetName = args[1];
+        if (this.isDeniedCommandTarget(sender, "admin.target-permission", targetName, commandNode)) {
+            return true;
+        }
+
         String newPassword = args[2];
-        xAuthPlayer xp = xAuth.getPlugin().getPlayerManager().getPlayer(targetName);
+        xAuthPlayer xp = this.getPlayerManager().getPlayer(targetName);
 
         int pwType = xp.getPasswordType().getTypeId();
         if (args.length > 3)
@@ -79,6 +86,6 @@ public class AdminChangepwCommand extends xAuthAdminCommand {
 
         properties.setProperty("response", response);
         this.callEvent(new xAuthCommandAdminChangepwEvent(properties));
-        this.setResult(true);
+        return true;
     }
 }

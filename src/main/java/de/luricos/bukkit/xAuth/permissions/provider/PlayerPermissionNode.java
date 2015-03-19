@@ -76,7 +76,7 @@ public abstract class PlayerPermissionNode {
         return eventName;
     }
 
-    public String getPermissionNode(Object[] arguments) {
+    public String getPermission(Object[] arguments) {
         return this.assemblePermission(getPermissionNode(), arguments);
     }
 
