@@ -20,15 +20,13 @@
 package de.luricos.bukkit.xAuth.listeners;
 
 import de.luricos.bukkit.xAuth.PlayerManager;
-import de.luricos.bukkit.xAuth.events.*;
-import de.luricos.bukkit.xAuth.restrictions.PlayerRestrictionHandler;
+import de.luricos.bukkit.xAuth.event.xAuthEvent;
+import de.luricos.bukkit.xAuth.permissions.provider.PlayerPermissionHandler;
 import de.luricos.bukkit.xAuth.xAuth;
-import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityTargetEvent;
 
 public class xAuthEventListener implements Listener {
     protected final PlayerManager playerManager;
@@ -37,180 +35,15 @@ public class xAuthEventListener implements Listener {
         this.playerManager = xAuth.getPlugin().getPlayerManager();
     }
 
-    protected void callEvent(final xAuthSystemEvent event) {
+    protected PlayerManager getPlayerManager() {
+        return this.playerManager;
+    }
+
+    protected void callEvent(final xAuthEvent event) {
         Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthSystemEvent.Action action) {
-        this.callEvent(new xAuthSystemEvent(action));
-    }
-
-    protected void callEvent(final xAuthPlayerChatEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerChatEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerChatEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerDamageByEntityEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerDamageByEntityEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerDamageByEntityEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerDamageEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerDamageEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerDamageEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerDropItemEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerDropItemEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerDropItemEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerExecuteCommandEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerExecuteCommandEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerExecuteCommandEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerFoodLevelChangeEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerFoodLevelChangeEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerFoodLevelChangeEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerGameModeChangeEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerGameModeChangeEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerGameModeChangeEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerInteractEntityEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerInteractEntityEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerInteractEntityEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerInteractEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerInteractEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerInteractEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerJoinEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerJoinEvent.Action action) {
-        this.callEvent(new xAuthPlayerJoinEvent(action));
-    }
-
-    protected void callEvent(final xAuthPlayerLoginEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerLoginEvent.Action action, final String message) {
-        this.callEvent(new xAuthPlayerLoginEvent(action, message));
-    }
-
-    protected void callEvent(final xAuthPlayerMoveEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerMoveEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerMoveEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerPickupItemEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerPickupItemEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerPickupItemEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerPotionSplashEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerPotionSplashEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerPotionSplashEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthPlayerQuitEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerQuitEvent.Action action) {
-        this.callEvent(new xAuthPlayerQuitEvent(action));
-    }
-
-    protected void callEvent(final xAuthPlayerRegainHealthEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthPlayerRegainHealthEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthPlayerRegainHealthEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthEntityTargetEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthEntityTargetEvent.Action action, final EntityTargetEvent.TargetReason reason) {
-        this.callEvent(new xAuthEntityTargetEvent(action, reason));
-    }
-
-    protected void callEvent(final xAuthBlockBreakEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthBlockBreakEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthBlockBreakEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthBlockPlaceEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthBlockPlaceEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthBlockPlaceEvent(action, status));
-    }
-
-    protected void callEvent(final xAuthHangingBreakByPlayerEvent event) {
-        Bukkit.getPluginManager().callEvent(event);
-    }
-
-    protected void callEvent(final xAuthHangingBreakByPlayerEvent.Action action, final xAuthPlayer.Status status) {
-        this.callEvent(new xAuthHangingBreakByPlayerEvent(action, status));
     }
 
     protected boolean isAllowed(final Player player, final Event event, final Object... obj) {
-        return new PlayerRestrictionHandler(player, event.getEventName(), obj).hasPermission();
+        return new PlayerPermissionHandler(player, event.getEventName(), obj).hasPermission();
     }
-
-    protected boolean isAllowedCommand(final Player player, final String... command) {
-        return new PlayerRestrictionHandler(player, "PlayerCommandPreProcessEvent", command).hasPermission();
-    }
-
 }

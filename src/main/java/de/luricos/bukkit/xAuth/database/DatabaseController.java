@@ -22,6 +22,7 @@ package de.luricos.bukkit.xAuth.database;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.sql.Connection;
@@ -34,20 +35,23 @@ import java.util.List;
 public class DatabaseController {
     private final xAuth plugin;
     private ConnectionPool connPool;
-    private List<Table> activeTables = new ArrayList<Table>();
+    private List<DatabaseTables> activeDatabaseTables = new ArrayList<DatabaseTables>();
     private DBMS dbms = DBMS.H2;
+    private enum DBMS {
+        H2, MySQL
+    };
 
     public DatabaseController(final xAuth plugin) {
         this.plugin = plugin;
-        dbInit();
+        this.initializeDatabase();
     }
 
-    private void dbInit() {
+    private void initializeDatabase() {
         // Initialize connection pool
         String driver, url, user, pass;
 
         if (plugin.getConfig().getBoolean("mysql.enabled")) { // MySQL
-            dbms = DBMS.MySQL;
+            this.dbms = DBMS.MySQL;
             ConfigurationSection cs = plugin.getConfig().getConfigurationSection("mysql");
             String host = cs.getString("host");
             int port = cs.getInt("port");
@@ -65,26 +69,26 @@ public class DatabaseController {
         }
 
         try {
-            connPool = new ConnectionPool(driver, url, user, pass);
+            this.connPool = new ConnectionPool(driver, url, user, pass);
         } catch (ClassNotFoundException e) {
-            xAuthLog.severe("Failed to create instance of " + getDBMS() + " JDBC Driver!", e);
+            xAuthLog.severe("Failed to create instance of " + this.getDatabaseManagerName() + " JDBC Driver!", e);
         }
 
         // Register tables
-        activeTables.add(Table.ACCOUNT);
-        activeTables.add(Table.PLAYERDATA);
+        this.activeDatabaseTables.add(DatabaseTables.ACCOUNT);
+        this.activeDatabaseTables.add(DatabaseTables.PLAYERDATA);
 
         // Activate session table only if session length is higher than zero
-        if (plugin.getConfig().getInt("session.length") > 0)
-            activeTables.add(Table.SESSION);
+        if (this.getConfig().getInt("session.length") > 0)
+            this.activeDatabaseTables.add(DatabaseTables.SESSION);
 
         // Activate location table only if location protection is enabled
-        if (plugin.getConfig().getBoolean("guest.protect-location"))
-            activeTables.add(Table.LOCATION);
+        if (this.getConfig().getBoolean("guest.protect-location"))
+            this.activeDatabaseTables.add(DatabaseTables.LOCATION);
 
         // Activate lockout table only if lockouts are enabled
-        if (plugin.getConfig().getInt("strikes.lockout-length") > 0)
-            activeTables.add(Table.LOCKOUT);
+        if (this.getConfig().getInt("strikes.lockout-length") > 0)
+            this.activeDatabaseTables.add(DatabaseTables.LOCKOUT);
     }
 
     public boolean isConnectable() {
@@ -102,9 +106,9 @@ public class DatabaseController {
 
     public Connection getConnection() {
         try {
-            return connPool.leaseConn();
+            return this.connPool.leaseConn();
         } catch (Exception e) {
-            xAuthLog.severe("Failed to borrow " + getDBMS() + " connection from pool!", e);
+            xAuthLog.severe("Failed to borrow " + getDatabaseManagerName() + " connection from pool!", e);
             return null;
         }
     }
@@ -114,16 +118,16 @@ public class DatabaseController {
     }
 
     public void close(Connection conn, PreparedStatement ps, ResultSet rs) {
-        close(rs);
-        close(ps);
-        close(conn);
+        this.close(rs);
+        this.close(ps);
+        this.close(conn);
     }
 
     public void close(Connection conn) {
         if (conn != null) {
             try {
                 conn.setAutoCommit(true);
-                connPool.returnConn(conn);
+                this.connPool.returnConn(conn);
             } catch (Exception e) {
                 xAuthLog.warning("Failed to return connection to pool!", e);
             }
@@ -152,9 +156,9 @@ public class DatabaseController {
 
     public void close() {
         try {
-            connPool.close();
+            this.connPool.close();
         } catch (Exception e) {
-            xAuthLog.severe("Failed to close " + getDBMS() + " connection pool!", e);
+            xAuthLog.severe("Failed to close " + getDatabaseManagerName() + " connection pool!", e);
         }
     }
 
@@ -163,28 +167,35 @@ public class DatabaseController {
         dbUpdater.runUpdate();
     }
 
-    public boolean isTableActive(Table tbl) {
-        return activeTables.contains(tbl);
+    public boolean isTableActive(DatabaseTables tbl) {
+        return activeDatabaseTables.contains(tbl);
     }
 
-    public String getTable(Table tbl) {
-        if (dbms == DBMS.H2)
+    public String getTable(DatabaseTables tbl) {
+        if (this.dbms == DBMS.H2)
             return tbl.getName();
 
-        return plugin.getConfig().getString("mysql.tables." + tbl.toString().toLowerCase());
+        return this.getConfig().getString("mysql.tables." + tbl.toString().toLowerCase());
     }
 
-    public List<Table> getActiveTables() {
-        return activeTables;
+    public String getRow(DatabaseRows row) {
+        return row.getName();
     }
 
-    public String getDBMS() {
-        return dbms.toString();
+    public FileConfiguration getConfig() {
+        return this.plugin.getConfig();
+    }
+
+    public List<DatabaseTables> getActiveDatabaseTables() {
+        return this.activeDatabaseTables;
+    }
+
+    public String getDatabaseManagerName() {
+        return this.dbms.toString();
     }
 
     public boolean isMySQL() {
-        return dbms == DBMS.MySQL;
+        return this.dbms == DBMS.MySQL;
     }
 
-    private enum DBMS {H2, MySQL}
 }

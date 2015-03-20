@@ -19,7 +19,8 @@
  */
 package de.luricos.bukkit.xAuth.listeners;
 
-import de.luricos.bukkit.xAuth.events.xAuthHangingBreakByPlayerEvent;
+import de.luricos.bukkit.xAuth.event.hanging.xAuthHangingBreakByPlayerEvent;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -48,10 +49,14 @@ public class xAuthHangingListener extends xAuthEventListener {
         if (this.isAllowed(player, event, entity))
             return;
 
-        xAuthPlayer xp = playerManager.getPlayer(player.getName());
-        playerManager.sendNotice(xp);
+        xAuthPlayer xp = this.playerManager.getPlayer(player.getName());
+        this.playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthHangingBreakByPlayerEvent.Action.HANGING_BREAK_CANCELLED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthHangingBreakByPlayerEvent.Action.HANGING_BREAK_CANCELLED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", player.getName());
+        this.callEvent(new xAuthHangingBreakByPlayerEvent(properties));
     }
 }

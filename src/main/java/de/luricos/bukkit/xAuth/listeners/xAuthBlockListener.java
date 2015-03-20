@@ -19,8 +19,9 @@
  */
 package de.luricos.bukkit.xAuth.listeners;
 
-import de.luricos.bukkit.xAuth.events.xAuthBlockBreakEvent;
-import de.luricos.bukkit.xAuth.events.xAuthBlockPlaceEvent;
+import de.luricos.bukkit.xAuth.event.block.xAuthBlockBreakEvent;
+import de.luricos.bukkit.xAuth.event.block.xAuthBlockPlaceEvent;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -43,7 +44,12 @@ public class xAuthBlockListener extends xAuthEventListener {
         playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthBlockBreakEvent.Action.BLOCK_BREAK_CANCELLED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthBlockBreakEvent.Action.BLOCK_BREAK_CANCELLED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", player.getName());
+        properties.setProperty("blocktype", event.getBlock().getType().name());
+        this.callEvent(new xAuthBlockBreakEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -56,6 +62,11 @@ public class xAuthBlockListener extends xAuthEventListener {
         playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthBlockPlaceEvent.Action.BLOCK_PLACE_CANCELLED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthBlockPlaceEvent.Action.BLOCK_PLACE_CANCELLED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("playername", player.getName());
+        properties.setProperty("blocktype", event.getBlock().getType().name());
+        this.callEvent(new xAuthBlockPlaceEvent(properties));
     }
 }

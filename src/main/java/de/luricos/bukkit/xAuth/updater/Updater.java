@@ -94,7 +94,7 @@ public class Updater {
     private static final String QUERY = "/servermods/files?projectIds="; // Path to GET
     private static final String HOST = "https://api.curseforge.com"; // Slugs will be appended to this to get to the project's RSS feed
 
-    private static final String[] NO_UPDATE_TAG = { "-DEV", "-PRE", "-SNAPSHOT" }; // If the version number contains one of these, don't update.
+    private static final String[] NO_UPDATE_TAG = { "-DEV", "-PRE", "-SNAPSHOT", "-SPIGOT" }; // If the version number contains one of these, don't update.
     private static final int BYTE_SIZE = 1024; // Used for downloading files
     private YamlConfiguration config; // Config file
     private String updateFolder;// The folder that downloads will be placed in
@@ -505,7 +505,6 @@ public class Updater {
                 if (this.hasTag(version) || version.equalsIgnoreCase(this.remoteVersion)) {
                     // We already have the latest version, or this build is tagged for no-update
                     this.result = Updater.UpdateResult.NO_UPDATE;
-                    return false;
                 }
             } else {
                 // The file's name did not contain the string 'vVersion'
@@ -625,7 +624,7 @@ public class Updater {
 
                 // Obtain the results of the project's file feed
                 if (!Updater.this.versionCheck(Updater.this.versionName))
-                    throw new UpdaterInvalidVersionException("An error occured during the version check process. Please check version format");
+                    throw new UpdaterInvalidVersionException("An error occured during the version check process. Please check version format. Result was: '" + Updater.this.versionName + "'");
 
                 if (Updater.this.type.equals(UpdateType.NO_DOWNLOAD)) {
                     Updater.this.result = UpdateResult.UPDATE_AVAILABLE;

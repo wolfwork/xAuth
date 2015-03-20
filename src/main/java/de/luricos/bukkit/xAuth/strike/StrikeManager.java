@@ -19,7 +19,7 @@
  */
 package de.luricos.bukkit.xAuth.strike;
 
-import de.luricos.bukkit.xAuth.database.Table;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.entity.Player;
@@ -58,7 +58,7 @@ public class StrikeManager {
 
             try {
                 String sql = String.format("INSERT INTO `%s` (`ipaddress`, `playername`, `time`) VALUES (?, ?, ?)",
-                        plugin.getDatabaseController().getTable(Table.LOCKOUT));
+                        plugin.getDatabaseController().getTable(DatabaseTables.LOCKOUT));
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, ipAddress);
                 ps.setString(2, playerName);
@@ -82,7 +82,7 @@ public class StrikeManager {
 
         try {
             String sql = String.format("SELECT `time` FROM `%s` WHERE `ipaddress` = ? AND `playername` = ?",
-                    plugin.getDatabaseController().getTable(Table.LOCKOUT));
+                    plugin.getDatabaseController().getTable(DatabaseTables.LOCKOUT));
             ps = conn.prepareStatement(sql);
             ps.setString(1, ipAddress);
             ps.setString(2, playerName);

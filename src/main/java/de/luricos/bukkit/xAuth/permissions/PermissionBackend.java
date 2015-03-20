@@ -42,6 +42,11 @@ public abstract class PermissionBackend {
     protected Configuration config;
     protected String providerName;
 
+    protected PROVIDER_STATE providerState = PROVIDER_STATE.STARTUP;
+    protected enum PROVIDER_STATE {
+        STARTUP, END, RELOAD, READY
+    };
+
     protected PermissionBackend(PermissionManager manager, Configuration config, String providerName) {
         this.manager = manager;
         this.config = config;
@@ -57,6 +62,19 @@ public abstract class PermissionBackend {
      * Reload Backend
      */
     public abstract void reload();
+
+    /**
+     * End Backend
+     */
+    public abstract void end();
+
+    public void setProviderState(PROVIDER_STATE state) {
+        this.providerState = state;
+    }
+
+    public PROVIDER_STATE getProviderState() {
+        return this.providerState;
+    }
 
     /**
      * Get ProviderName

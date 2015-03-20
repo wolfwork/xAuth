@@ -19,7 +19,9 @@
  */
 package de.luricos.bukkit.xAuth.listeners;
 
-import de.luricos.bukkit.xAuth.events.*;
+import de.luricos.bukkit.xAuth.event.entity.xAuthEntityTargetEvent;
+import de.luricos.bukkit.xAuth.event.player.*;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import de.luricos.bukkit.xAuth.xAuthPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -42,11 +44,17 @@ public class xAuthEntityListener extends xAuthEventListener {
         if (this.isAllowed(damagee, event, damagee))
             return;
 
-        xAuthPlayer xp = playerManager.getPlayer(damagee.getName());
-        playerManager.sendNotice(xp);
+        xAuthPlayer xp = this.playerManager.getPlayer(damagee.getName());
+        this.playerManager.sendNotice(xp);
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerDamageByEntityEvent.Action.DAMAGE_BY_ENTITY_CANCELLED, xp.getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerDamageByEntityEvent.Action.DAMAGE_BY_ENTITY_CANCELLED);
+        properties.setProperty("status", xp.getStatus());
+        properties.setProperty("damagee", damagee.getName());
+        properties.setProperty("damager", ((Player) damager).getPlayer().getName());
+        properties.setProperty("playername", xp.getName());
+        this.callEvent(new xAuthPlayerDamageByEntityEvent(properties));
     }
 
 
@@ -57,11 +65,17 @@ public class xAuthEntityListener extends xAuthEventListener {
             return;
 
         Player player = (Player) entity;
-        xAuthPlayer xp = playerManager.getPlayer(player.getName());
+        xAuthPlayer xp = this.playerManager.getPlayer(player.getName());
 
-        if ((!this.isAllowed(player, event, player)) || playerManager.hasGodMode(xp, event.getCause())) {
+        if ((!this.isAllowed(player, event, player)) || this.playerManager.hasGodMode(xp, event.getCause())) {
             event.setCancelled(true);
-            this.callEvent(xAuthPlayerDamageEvent.Action.PLAYER_DAMAGE_CANCELLED, xp.getStatus());
+
+            xAuthEventProperties properties = new xAuthEventProperties();
+            properties.setProperty("action", xAuthPlayerDamageEvent.Action.PLAYER_DAMAGE_CANCELLED);
+            properties.setProperty("status", xp.getStatus());
+            properties.setProperty("damage", event.getDamage());
+            properties.setProperty("playername", player.getName());
+            this.callEvent(new xAuthPlayerDamageEvent(properties));
         }
     }
 
@@ -77,7 +91,11 @@ public class xAuthEntityListener extends xAuthEventListener {
 
         event.setCancelled(true);
 
-        this.callEvent(xAuthEntityTargetEvent.Action.ENTITY_TARGET_CANCELLED, event.getReason());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthEntityTargetEvent.Action.ENTITY_TARGET_CANCELLED);
+        properties.setProperty("reason", event.getReason());
+        properties.setProperty("playername", player.getName());
+        this.callEvent(new xAuthEntityTargetEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -92,7 +110,12 @@ public class xAuthEntityListener extends xAuthEventListener {
 
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerFoodLevelChangeEvent.Action.FOODLEVEL_CHANGE_CANCELLED, playerManager.getPlayer(player.getName()).getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerFoodLevelChangeEvent.Action.FOODLEVEL_CHANGE_CANCELLED);
+        properties.setProperty("status", this.playerManager.getPlayer(player.getName()).getStatus());
+        properties.setProperty("foodlevel", event.getFoodLevel());
+        properties.setProperty("playername", player.getName());
+        this.callEvent(new xAuthPlayerFoodLevelChangeEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -108,7 +131,12 @@ public class xAuthEntityListener extends xAuthEventListener {
             // dont allow splashes (set to 0) when the entity does not have the permission
             event.setIntensity(entity, 0);
 
-            this.callEvent(xAuthPlayerPotionSplashEvent.Action.POTION_SPLASH_CANCELLED, playerManager.getPlayer(player.getName()).getStatus());
+            xAuthEventProperties properties = new xAuthEventProperties();
+            properties.setProperty("action", xAuthPlayerPotionSplashEvent.Action.POTION_SPLASH_CANCELLED);
+            properties.setProperty("status", this.playerManager.getPlayer(player.getName()).getStatus());
+            properties.setProperty("potiontype", event.getPotion().getItem().getData().getItemType().name());
+            properties.setProperty("playername", player.getName());
+            this.callEvent(new xAuthPlayerPotionSplashEvent(properties));
         }
     }
 
@@ -124,6 +152,12 @@ public class xAuthEntityListener extends xAuthEventListener {
 
         event.setCancelled(true);
 
-        this.callEvent(xAuthPlayerRegainHealthEvent.Action.REGAIN_HEALTH_CANCELLED, playerManager.getPlayer(player.getName()).getStatus());
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthPlayerRegainHealthEvent.Action.REGAIN_HEALTH_CANCELLED);
+        properties.setProperty("status", this.playerManager.getPlayer(player.getName()).getStatus());
+        properties.setProperty("amount", event.getAmount());
+        properties.setProperty("regainreason", event.getRegainReason());
+        properties.setProperty("playername", player.getName());
+        this.callEvent(new xAuthPlayerRegainHealthEvent(properties));
     }
 }

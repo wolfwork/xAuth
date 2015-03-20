@@ -99,12 +99,12 @@ public class MessageHandler {
     }
 
     public void sendMessage(String node, CommandSender sender, String targetName) {
-        if (sender != null) {
-            String message = getNode(node, sender.getName(), targetName);
+        if (sender == null)
+            return;
 
-            for (String line : message.split("\n"))
-                sender.sendMessage(line);
-        }
+        String message = getNode(node, sender.getName(), targetName);
+        for (String line : message.split("\n"))
+            sender.sendMessage(line);
     }
 
     public String getNode(String node) {

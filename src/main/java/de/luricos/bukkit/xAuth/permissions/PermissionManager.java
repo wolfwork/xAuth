@@ -19,7 +19,8 @@
  */
 package de.luricos.bukkit.xAuth.permissions;
 
-import de.luricos.bukkit.xAuth.events.xAuthSystemEvent;
+import de.luricos.bukkit.xAuth.event.system.xAuthSystemEvent;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
@@ -59,32 +60,58 @@ public class PermissionManager {
     }
 
     public void setBackend(String backendName) {
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("backendname", backendName);
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_LOADING);
+        this.callEvent(new xAuthSystemEvent(properties));
+
         synchronized (this) {
             this.backend = PermissionBackend.getBackend(backendName, this, this.config);
+            this.backend.setProviderState(PermissionBackend.PROVIDER_STATE.STARTUP);
             this.backend.initialize();
         }
 
-        this.callEvent(xAuthSystemEvent.Action.PERMISSION_BACKEND_CHANGED);
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_READY);
+        this.callEvent(new xAuthSystemEvent(properties));
+
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_CHANGED);
+        this.callEvent(new xAuthSystemEvent(properties));
+
+        this.backend.setProviderState(PermissionBackend.PROVIDER_STATE.READY);
     }
 
     protected void callEvent(xAuthSystemEvent event) {
         Bukkit.getServer().getPluginManager().callEvent(event);
     }
 
-    protected void callEvent(xAuthSystemEvent.Action action) {
-        this.callEvent(new xAuthSystemEvent(action));
-    }
-
     public void reset() {
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_RELOADING);
+        this.callEvent(new xAuthSystemEvent(properties));
+
         if (this.backend != null) {
+            this.backend.setProviderState(PermissionBackend.PROVIDER_STATE.RELOAD);
             this.backend.reload();
+            properties.setProperty("backendname", this.backend.getProviderName());
         }
 
-        this.callEvent(xAuthSystemEvent.Action.RELOADED);
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_RELOADED);
+        this.callEvent(new xAuthSystemEvent(properties));
     }
 
     public void end() {
-        reset();
+        if (this.backend != null) {
+            this.backend.setProviderState(PermissionBackend.PROVIDER_STATE.END);
+            this.backend.end();
+        }
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthSystemEvent.Action.PERMISSION_BACKEND_ENDED);
+        this.callEvent(new xAuthSystemEvent(properties));
+    }
+
+    public PermissionBackend.PROVIDER_STATE getBackendState(String state) {
+        return this.backend.getProviderState();
     }
 
     public boolean has(CommandSender sender, String permissionString) {

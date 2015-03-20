@@ -64,10 +64,14 @@ public class PermissionsExSupport extends PermissionBackend {
     }
 
     @Override
-    public void reload() {
+    public void end() {
         provider = null;
         xAuthLog.info("Detached from Permissions plugin '" + getProviderName() + "'.");
+    }
 
+    @Override
+    public void reload() {
+        this.end();
         this.initialize();
     }
 

@@ -19,6 +19,9 @@
  */
 package de.luricos.bukkit.xAuth.listeners;
 
+import de.luricos.bukkit.xAuth.event.inventory.xAuthInventoryClickEvent;
+import de.luricos.bukkit.xAuth.event.inventory.xAuthInventoryOpenEvent;
+import de.luricos.bukkit.xAuth.event.xAuthEventProperties;
 import de.luricos.bukkit.xAuth.xAuth;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -45,8 +48,16 @@ public class xAuthInventoryListener extends xAuthEventListener {
         if (this.isAllowed(player, event, event.getInventory().getType()))
             return;
 
-        playerManager.sendNotice(playerManager.getPlayer(player.getName()));
+        this.playerManager.sendNotice(this.playerManager.getPlayer(player.getName()));
         event.setCancelled(true);
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthInventoryClickEvent.Action.INVENTORY_CLICK_CANCELED);
+        properties.setProperty("status", this.playerManager.getPlayer(player.getName()).getStatus());
+        properties.setProperty("inventoryname", event.getInventory().getName());
+        properties.setProperty("inventoryview", event.getView());
+        properties.setProperty("playername", player.getName());
+        this.callEvent(new xAuthInventoryClickEvent(properties));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -61,5 +72,13 @@ public class xAuthInventoryListener extends xAuthEventListener {
             return;
 
         event.setCancelled(true);
+
+        xAuthEventProperties properties = new xAuthEventProperties();
+        properties.setProperty("action", xAuthInventoryOpenEvent.Action.NVENTORY_OPEN_CANCELLED);
+        properties.setProperty("status", this.playerManager.getPlayer(humanEntity.getName()).getStatus());
+        properties.setProperty("inventoryname", event.getInventory().getName());
+        properties.setProperty("inventoryview", event.getView());
+        properties.setProperty("playername", humanEntity.getName());
+        this.callEvent(new xAuthInventoryOpenEvent(properties));
     }
 }

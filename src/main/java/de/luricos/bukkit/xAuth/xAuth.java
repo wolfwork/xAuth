@@ -22,7 +22,10 @@ package de.luricos.bukkit.xAuth;
 import de.luricos.bukkit.xAuth.auth.AuthMethod;
 import de.luricos.bukkit.xAuth.auth.AuthMethodSQL;
 import de.luricos.bukkit.xAuth.auth.AuthMethodURL;
-import de.luricos.bukkit.xAuth.commands.*;
+import de.luricos.bukkit.xAuth.command.player.*;
+import de.luricos.bukkit.xAuth.command.tabcomplete.xAuthAdminCommandsTabCompleter;
+import de.luricos.bukkit.xAuth.command.xAuthAdminCommands;
+import de.luricos.bukkit.xAuth.command.xAuthCommandProvider;
 import de.luricos.bukkit.xAuth.database.DatabaseController;
 import de.luricos.bukkit.xAuth.exceptions.xAuthNotAvailable;
 import de.luricos.bukkit.xAuth.listeners.*;
@@ -44,8 +47,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 public class xAuth extends JavaPlugin {
@@ -61,7 +62,7 @@ public class xAuth extends JavaPlugin {
     private Configuration config;
     private Updater updater;
 
-    private List<String> commands = new ArrayList<String>();
+    private xAuthCommandProvider commandProvider;
 
     private String h2Version = "1.3.164";
     //private String libURLPath = "http://bukkit.luricos.de/plugins/xAuth/lib/";
@@ -154,14 +155,14 @@ public class xAuth extends JavaPlugin {
 
         // Test connection to database
         if (!databaseController.isConnectable()) {
-            xAuthLog.severe("Failed to establish " + databaseController.getDBMS() + " database connection!");
+            xAuthLog.severe("Failed to establish " + databaseController.getDatabaseManagerName() + " database connection!");
 
             // disable (for now, may change in the future)
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        xAuthLog.info("Successfully established connection to " + databaseController.getDBMS() + " database");
+        xAuthLog.info("Successfully established connection to " + databaseController.getDatabaseManagerName() + " database");
         databaseController.runUpdater();
 
         // Initialize ALL THE CLASSES
@@ -184,13 +185,30 @@ public class xAuth extends JavaPlugin {
         getCommand("logout").setExecutor(new LogoutCommand());
         getCommand("quit").setExecutor(new QuitCommand());
         getCommand("changepw").setExecutor(new ChangePwdCommand());
-        getCommand("xauth").setExecutor(new xAuthAdminCommands());
 
-        // add commands to keyring
-        for (String command : this.getDescription().getCommands().keySet()) {
-            this.commands.add(command);
-            this.commands.addAll(this.getCommand(command).getAliases());
-        }
+        // configure xauth admin commands
+        xAuthAdminCommands adminCommands = new xAuthAdminCommands();
+        adminCommands.setAliasCommand("changepw", "cpw");
+        adminCommands.setAliasCommand("changepw", "changepassword");
+        adminCommands.setAliasCommand("changepw", "changepass");
+
+        adminCommands.setAliasCommand("unregister", "unreg");
+
+        adminCommands.setAliasCommand("location", "loc");
+
+        adminCommands.setAliasCommand("activate", "unlock");
+
+        adminCommands.setAliasCommand("config", "conf");
+        adminCommands.setAliasCommand("config", "cfg");
+
+        adminCommands.setAliasCommand("profile", "info");
+
+        getCommand("xauth").setExecutor(adminCommands);
+        getCommand("xauth").setTabCompleter(new xAuthAdminCommandsTabCompleter());
+
+        // create commands handler
+        this.commandProvider = new xAuthCommandProvider();
+        this.commandProvider.initialize();
 
         // enable command logging when set via config
         if (getConfig().getBoolean("filter.commands"))
@@ -200,8 +218,8 @@ public class xAuth extends JavaPlugin {
         //lol();
     }
 
-    public List<String> getCommands() {
-        return this.commands;
+    public xAuthCommandProvider getCommandProvider() {
+        return this.commandProvider;
     }
 
     private void registerEvents() {
@@ -286,6 +304,7 @@ public class xAuth extends JavaPlugin {
         return strikeManager;
     }
 
+    // @TODO implement factory
     public AuthMethod getAuthClass(xAuthPlayer p) {
         if (isAuthURL())
             return new AuthMethodURL(this, p.getIPAddress());

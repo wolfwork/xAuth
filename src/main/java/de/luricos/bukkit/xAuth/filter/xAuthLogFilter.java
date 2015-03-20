@@ -39,10 +39,14 @@ public class xAuthLogFilter implements Filter {
         return this.delegatingFilter;
     }
 
+    public String getMessage() {
+        return this.message;
+    }
+
     @Override
     public boolean isLoggable(LogRecord record) {
         String logMessage = record.getMessage().toLowerCase();
 
-        return !logMessage.contains(this.message);
+        return !logMessage.contains(this.getMessage());
     }
 }

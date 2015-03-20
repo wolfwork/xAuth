@@ -19,7 +19,7 @@
  */
 package de.luricos.bukkit.xAuth;
 
-import de.luricos.bukkit.xAuth.database.Table;
+import de.luricos.bukkit.xAuth.database.DatabaseTables;
 import de.luricos.bukkit.xAuth.utils.xAuthLog;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -50,7 +50,7 @@ public class LocationManager {
 
         try {
             String sql = String.format("SELECT * FROM `%s`",
-                    plugin.getDatabaseController().getTable(Table.LOCATION));
+                    plugin.getDatabaseController().getTable(DatabaseTables.LOCATION));
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
 
@@ -89,10 +89,10 @@ public class LocationManager {
             String sql;
             if (plugin.getDatabaseController().isMySQL())
                 sql = String.format("INSERT INTO `%s` VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `uid` = VALUES(`uid`), `x` = VALUES(`x`), `y` = VALUES(`y`), `z` = VALUES(`z`), `yaw` = VALUES(`yaw`), `pitch` = VALUES(`pitch`), `global` = VALUES(`global`)",
-                        plugin.getDatabaseController().getTable(Table.LOCATION));
+                        plugin.getDatabaseController().getTable(DatabaseTables.LOCATION));
             else
                 sql = String.format("MERGE INTO `%s` VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        plugin.getDatabaseController().getTable(Table.LOCATION));
+                        plugin.getDatabaseController().getTable(DatabaseTables.LOCATION));
 
             ps = conn.prepareStatement(sql);
             ps.setString(1, uid.toString());
@@ -126,7 +126,7 @@ public class LocationManager {
 
         try {
             String sql = String.format("DELETE FROM `%s` WHERE `uid` = ?",
-                    plugin.getDatabaseController().getTable(Table.LOCATION));
+                    plugin.getDatabaseController().getTable(DatabaseTables.LOCATION));
             ps = conn.prepareStatement(sql);
             ps.setString(1, uid.toString());
             ps.executeUpdate();
